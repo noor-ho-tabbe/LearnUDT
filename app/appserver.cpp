@@ -51,7 +51,7 @@ int main(int argc, char* argv[])
       cout << "illegal port number or port is busy.\n" << endl;
       return 0;
    }
-
+   
    UDTSOCKET serv = UDT::socket(res->ai_family, res->ai_socktype, res->ai_protocol);
 
    // UDT Options
@@ -60,6 +60,7 @@ int main(int argc, char* argv[])
    //UDT::setsockopt(serv, 0, UDT_RCVBUF, new int(10000000), sizeof(int));
    //UDT::setsockopt(serv, 0, UDP_RCVBUF, new int(10000000), sizeof(int));
 
+   // 绑定本地serv和本地IP地址绑定
    if (UDT::ERROR == UDT::bind(serv, res->ai_addr, res->ai_addrlen))
    {
       cout << "bind: " << UDT::getlasterror().getErrorMessage() << endl;
@@ -70,6 +71,7 @@ int main(int argc, char* argv[])
 
    cout << "server is ready at port: " << service << endl;
 
+   // 第二个参数表示UDT4次握手未完成队列，监听serv这个描述符
    if (UDT::ERROR == UDT::listen(serv, 10))
    {
       cout << "listen: " << UDT::getlasterror().getErrorMessage() << endl;
@@ -96,6 +98,7 @@ int main(int argc, char* argv[])
 
       #ifndef WIN32
          pthread_t rcvthread;
+	  // 客户端连接成功起一个线程去接收数据
          pthread_create(&rcvthread, NULL, recvdata, new UDTSOCKET(recver));
          pthread_detach(rcvthread);
       #else
@@ -138,7 +141,7 @@ DWORD WINAPI recvdata(LPVOID usocket)
 
          rsize += rs;
       }
-
+      // 出现错误就结束while循环 否则因为rsize==100000继续循环接收数据
       if (rsize < size)
          break;
    }

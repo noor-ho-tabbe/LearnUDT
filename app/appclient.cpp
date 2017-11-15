@@ -41,13 +41,12 @@ int main(int argc, char* argv[])
    hints.ai_socktype = SOCK_STREAM;
    //hints.ai_socktype = SOCK_DGRAM;
 
-   //函数支持ipv4和ipv6  函数成功后可以获取ip地址 保存在local中
    if (0 != getaddrinfo(NULL, "9000", &hints, &local))
    {
       cout << "incorrect network address.\n" << endl;
       return 0;
    }
-   // 创建socket
+   // ����socket
    UDTSOCKET client = UDT::socket(local->ai_family, local->ai_socktype, local->ai_protocol);
 
    // UDT Options
@@ -72,7 +71,7 @@ int main(int argc, char* argv[])
       return 0;
    }
    */
-   // 释放
+   
    freeaddrinfo(local);
 
    if (0 != getaddrinfo(argv[1], argv[2], &hints, &peer))

@@ -283,6 +283,7 @@ UDTSOCKET CUDTUnited::newSocket(int af, int type)
    }
 
    CGuard::enterCS(m_IDLock);
+   // 分配一个随机的socketid
    ns->m_SocketID = -- m_SocketID;
    CGuard::leaveCS(m_IDLock);
 
@@ -1226,8 +1227,10 @@ void CUDTUnited::checkBrokenSockets()
       }
    }
 
+   // 遍历已经关闭socket列表中的项
    for (map<UDTSOCKET, CUDTSocket*>::iterator j = m_ClosedSockets.begin(); j != m_ClosedSockets.end(); ++ j)
    {
+      // m_ullLingerExpiration短暂延时时间
       if (j->second->m_pUDT->m_ullLingerExpiration > 0)
       {
          // asynchronous close: 
@@ -1238,7 +1241,7 @@ void CUDTUnited::checkBrokenSockets()
             j->second->m_TimeStamp = CTimer::getTime();
          }
       }
-
+      // 已经从接受列表中移除后后放入可移除列表
       // timeout 1 second to destroy a socket AND it has been removed from RcvUList
       if ((CTimer::getTime() - j->second->m_TimeStamp > 1000000) && ((NULL == j->second->m_pUDT->m_pRNode) || !j->second->m_pUDT->m_pRNode->m_bOnList))
       {
@@ -1499,6 +1502,7 @@ void CUDTUnited::updateMux(CUDTSocket* s, const CUDTSocket* ls)
       #endif
    }
 
+   // 如果Socket单位标记为关闭，移除所有sockets
    // remove all sockets and multiplexers
    CGuard::enterCS(self->m_ControlLock);
    for (map<UDTSOCKET, CUDTSocket*>::iterator i = self->m_Sockets.begin(); i != self->m_Sockets.end(); ++ i)
@@ -1566,6 +1570,7 @@ int CUDT::cleanup()
 
 UDTSOCKET CUDT::socket(int af, int type, int)
 {
+   // 如果垃圾回收线程没启动这里重新启动
    if (!s_UDTUnited.m_bGCStatus)
       s_UDTUnited.startup();
 
