@@ -1582,8 +1582,9 @@ void CUDT::sample(CPerfMon* perf, bool clear)
       throw CUDTException(2, 2, 0);
    if (m_bBroken || m_bClosing)
       throw CUDTException(2, 1, 0);
-
+   // Î¢Ãë
    uint64_t currtime = CTimer::getTime();
+   // ºÁÃë
    perf->msTimeStamp = (currtime - m_StartTime) / 1000;
 
    perf->pktSent = m_llTraceSent;
