@@ -1012,10 +1012,12 @@ void CUDT::close()
 
 int CUDT::send(const char* data, int len)
 {
+   // socket类型必须为UDT_STREAM模式，否则异常退出
    if (UDT_DGRAM == m_iSockType)
       throw CUDTException(5, 10, 0);
 
    // throw an exception if not connected
+   // 如果CUDT 不处于连接状态直接抛出异常退出
    if (m_bBroken || m_bClosing)
       throw CUDTException(2, 1, 0);
    else if (!m_bConnected)
@@ -1026,14 +1028,17 @@ int CUDT::send(const char* data, int len)
 
    CGuard sendguard(m_SendLock);
 
+   // 发送缓冲区m_pSndBuffer->getCurrBufSize()没有数据
    if (m_pSndBuffer->getCurrBufSize() == 0)
    {
       // delay the EXP timer to avoid mis-fired timeout
       uint64_t currtime;
       CTimer::rdtsc(currtime);
+	  // 更新m_ullLastRspTime为当前时间
       m_ullLastRspTime = currtime;
    }
 
+   // 发送缓冲区满了
    if (m_iSndBufSize <= m_pSndBuffer->getCurrBufSize())
    {
       if (!m_bSynSending)
