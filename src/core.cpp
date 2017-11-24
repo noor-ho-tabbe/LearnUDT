@@ -1041,10 +1041,12 @@ int CUDT::send(const char* data, int len)
    // 发送缓冲区满了
    if (m_iSndBufSize <= m_pSndBuffer->getCurrBufSize())
    {
+      // 不是同步模式直接抛出异常
       if (!m_bSynSending)
          throw CUDTException(6, 1, 0);
       else
       {
+         // 等待数据被发送
          // wait here during a blocking sending
          #ifndef WIN32
             pthread_mutex_lock(&m_SendBlockLock);
@@ -1080,6 +1082,7 @@ int CUDT::send(const char* data, int len)
             }
          #endif
 
+         // 检查连接状态, socket未连接抛异常
          // check the connection status
          if (m_bBroken || m_bClosing)
             throw CUDTException(2, 1, 0);
@@ -1100,15 +1103,23 @@ int CUDT::send(const char* data, int len)
 
       return 0;
    }
-
+   /* m_iSndBufSize发送缓冲区大小,是一个固定值，m_pSndBuffer->getCurrBufSize()当前缓冲区的数据大小
+   *  m_iPayloadSize:负载
+   *  size: 可存放的数据大小
+   */
+   
    int size = (m_iSndBufSize - m_pSndBuffer->getCurrBufSize()) * m_iPayloadSize;
+   // 如果剩余的空间大小(size)大于新进来的数据包大小(len)
+   // size == len
    if (size > len)
       size = len;
 
+   // 当缓冲区已用大小为0的时候，更新m_llSndDurationCounter为当前时间
    // record total time used for sending
    if (0 == m_pSndBuffer->getCurrBufSize())
       m_llSndDurationCounter = CTimer::getTime();
 
+   // 将要发送的数据放入缓冲区
    // insert the user buffer into the sening list
    m_pSndBuffer->addBuffer(data, size);
 

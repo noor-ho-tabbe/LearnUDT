@@ -119,10 +119,12 @@ CSndBuffer::~CSndBuffer()
 
 void CSndBuffer::addBuffer(const char* data, int len, int ttl, bool order)
 {
+   // 计算需要多少个block存放数据
    int size = len / m_iMSS;
    if ((len % m_iMSS) != 0)
       size ++;
 
+   // size + m_iCount(使用的block)大于初始分配的buffer大小则动态分配内存
    // dynamically increase sender buffer
    while (size + m_iCount >= m_iSize)
       increase();
@@ -131,7 +133,9 @@ void CSndBuffer::addBuffer(const char* data, int len, int ttl, bool order)
    int32_t inorder = order;
    inorder <<= 29;
 
+   // s指向最后一个已用block之后的block
    Block* s = m_pLastBlock;
+   // 循环把数据放在block中
    for (int i = 0; i < size; ++ i)
    {
       int pktlen = len - i * m_iMSS;
@@ -155,7 +159,8 @@ void CSndBuffer::addBuffer(const char* data, int len, int ttl, bool order)
    m_pLastBlock = s;
 
    CGuard::enterCS(m_BufLock);
-   m_iCount += size;
+   // 更新用掉的block数量
+   m_iCount += size; 
    CGuard::leaveCS(m_BufLock);
 
    m_iNextMsgNo ++;
@@ -284,6 +289,7 @@ int CSndBuffer::getCurrBufSize() const
 
 void CSndBuffer::increase()
 {
+   // 分配固定大小的内存 m_iSize == 32
    int unitsize = m_pBuffer->m_iSize;
 
    // new physical buffer
