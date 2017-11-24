@@ -571,6 +571,7 @@ void CUDT::connect(const sockaddr* serv_addr)
 {
    CGuard cg(m_ConnectionLock);
 
+   // 检查CUDTSocket是否打开，没打开就抛出异常
    if (!m_bOpened)
       throw CUDTException(5, 0, 0);
 
@@ -582,6 +583,7 @@ void CUDT::connect(const sockaddr* serv_addr)
 
    // record peer/server address
    delete m_pPeerAddr;
+   // 拷贝服务器的地址进入m_pPeerAddr中
    m_pPeerAddr = (AF_INET == m_iIPversion) ? (sockaddr*)new sockaddr_in : (sockaddr*)new sockaddr_in6;
    memcpy(m_pPeerAddr, serv_addr, (AF_INET == m_iIPversion) ? sizeof(sockaddr_in) : sizeof(sockaddr_in6));
 

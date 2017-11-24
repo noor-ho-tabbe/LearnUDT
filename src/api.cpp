@@ -772,6 +772,8 @@ int CUDTUnited::connect(const UDTSOCKET u, const sockaddr* name, int namelen)
    // connect_complete() may be called before connect() returns.
    // So we need to update the status before connect() is called,
    // otherwise the status may be overwritten with wrong value (CONNECTED vs. CONNECTING).
+
+   // CUDTSocket״̬ת��ΪCONNECTING
    s->m_Status = CONNECTING;
    try
    {
