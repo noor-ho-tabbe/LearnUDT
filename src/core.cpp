@@ -1123,12 +1123,16 @@ int CUDT::send(const char* data, int len)
    // insert the user buffer into the sening list
    m_pSndBuffer->addBuffer(data, size);
 
+   // 将这个socket放入发送队列m_pSndQueue的m_pSndUList列表中
    // insert this socket to snd list if it is not on the list yet
    m_pSndQueue->m_pSndUList->update(this, false);
 
+   // 如果缓冲区满了
    if (m_iSndBufSize <= m_pSndBuffer->getCurrBufSize())
    {
+      // epoll边缘触发
       // write is not available any more
+      // socket从不可写变成可写状态
       s_UDTUnited.m_EPoll.update_events(m_SocketID, m_sPollID, UDT_EPOLL_OUT, false);
    }
 
