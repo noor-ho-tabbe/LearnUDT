@@ -729,6 +729,7 @@ UDTSOCKET CUDTUnited::accept(const UDTSOCKET listen, sockaddr* addr, int* addrle
 
 int CUDTUnited::connect(const UDTSOCKET u, const sockaddr* name, int namelen)
 {
+   // 查找UDTSOCKET对应的CUDTSocket,适配器模式对外面来说是一个UDTSOCKET,对底层来说是一个CUDTSocket
    CUDTSocket* s = locate(u);
    if (NULL == s)
       throw CUDTException(5, 4, 0);
@@ -748,12 +749,18 @@ int CUDTUnited::connect(const UDTSOCKET u, const sockaddr* name, int namelen)
    }
 
    // a socket can "connect" only if it is in INIT or OPENED status
+   // 检查socket初始值是否为INIT
    if (INIT == s->m_Status)
    {
+      // m_bRendezvous会合模式 默认状态是传统的client->server模式，这里值为false
       if (!s->m_pUDT->m_bRendezvous)
       {
+         // 初始化m_pUDT的一些参数，然后UDT就被打开了
          s->m_pUDT->open();
+		 // 查看multiplexer中是否有该s对应的port，若有则会进行端口复用，
+		 // 若没有则会新建一个此端口对应的multiplexer。另外，在接收端bind函数中也有updateMux  
          updateMux(s);
+		 // 打开的UDT状态变为OPENED
          s->m_Status = OPENED;
       }
       else

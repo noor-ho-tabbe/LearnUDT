@@ -80,6 +80,7 @@ int main(int argc, char* argv[])
       return 0;
    }
 
+   // 连接到服务器
    // connect to the server, implict bind
    if (UDT::ERROR == UDT::connect(client, peer->ai_addr, peer->ai_addrlen))
    {

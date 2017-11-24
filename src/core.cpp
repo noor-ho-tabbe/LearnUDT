@@ -1127,15 +1127,13 @@ int CUDT::send(const char* data, int len)
    // insert this socket to snd list if it is not on the list yet
    m_pSndQueue->m_pSndUList->update(this, false);
 
-   // 如果缓冲区满了
+   // 如果缓冲区满了不写了
    if (m_iSndBufSize <= m_pSndBuffer->getCurrBufSize())
    {
-      // epoll边缘触发
       // write is not available any more
-      // socket从不可写变成可写状态
       s_UDTUnited.m_EPoll.update_events(m_SocketID, m_sPollID, UDT_EPOLL_OUT, false);
    }
-
+   // 返回发送到缓冲区的数据大小
    return size;
 }
 
