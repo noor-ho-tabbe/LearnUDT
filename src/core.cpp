@@ -595,15 +595,17 @@ void CUDT::connect(const sockaddr* serv_addr)
    ttl += CTimer::getTime();
    m_pRcvQueue->registerConnector(m_SocketID, this, m_iIPversion, serv_addr, ttl);
 
+   // 握手报文信息
    // This is my current configurations
-   m_ConnReq.m_iVersion = m_iVersion;
-   m_ConnReq.m_iType = m_iSockType;
-   m_ConnReq.m_iMSS = m_iMSS;
+   m_ConnReq.m_iVersion = m_iVersion;  // 版本
+   m_ConnReq.m_iType = m_iSockType;    // socket类型
+   m_ConnReq.m_iMSS = m_iMSS;          // mss值  
    m_ConnReq.m_iFlightFlagSize = (m_iRcvBufSize < m_iFlightFlagSize)? m_iRcvBufSize : m_iFlightFlagSize;
-   m_ConnReq.m_iReqType = (!m_bRendezvous) ? 1 : 0;
-   m_ConnReq.m_iID = m_SocketID;
+   m_ConnReq.m_iReqType = (!m_bRendezvous) ? 1 : 0; // 请求类型
+   m_ConnReq.m_iID = m_SocketID; // socketID
    CIPAddress::ntop(serv_addr, m_ConnReq.m_piPeerIP, m_iIPversion);
 
+   // 初始化一个序列号，即包的编号
    // Random Initial Sequence Number
    srand((unsigned int)CTimer::getTime());
    m_iISN = m_ConnReq.m_iISN = (int32_t)(CSeqNo::m_iMaxSeqNo * (double(rand()) / RAND_MAX));
@@ -615,21 +617,26 @@ void CUDT::connect(const sockaddr* serv_addr)
    m_iSndLastAck2 = m_iISN;
    m_ullSndLastAck2Time = CTimer::getTime();
 
+   // 设置发送的包的一些信息
    // Inform the server my configurations.
    CPacket request;
    char* reqdata = new char [m_iPayloadSize];
    request.pack(0, NULL, reqdata, m_iPayloadSize);
+   // ID = 0 表示一个控制包
    // ID = 0, connection request
    request.m_iID = 0;
 
    int hs_size = m_iPayloadSize;
    m_ConnReq.serialize(reqdata, hs_size);
    request.setLength(hs_size);
+   // 将组装好的报文发送出去(主要是握手信息)
    m_pSndQueue->sendto(serv_addr, request);
    m_llLastReqTime = CTimer::getTime();
 
+   // 更新CUDT状态为connecting
    m_bConnecting = true;
 
+   // 同步连接  m_bSynRecving = true
    // asynchronous connect, return immediately
    if (!m_bSynRecving)
    {
@@ -637,6 +644,7 @@ void CUDT::connect(const sockaddr* serv_addr)
       return;
    }
 
+   // 等待对端发过来的信息
    // Wait for the negotiated configurations from the peer side.
    CPacket response;
    char* resdata = new char [m_iPayloadSize];
@@ -644,8 +652,10 @@ void CUDT::connect(const sockaddr* serv_addr)
 
    CUDTException e(0, 0);
 
+   // CUDT处于未关闭状态时候
    while (!m_bClosing)
    {
+      // 做一个短暂的延时，250ms发送一次握手请求
       // avoid sending too many requests, at most 1 request per 250ms
       if (CTimer::getTime() - m_llLastReqTime > 250000)
       {
@@ -658,8 +668,10 @@ void CUDT::connect(const sockaddr* serv_addr)
       }
 
       response.setLength(m_iPayloadSize);
-      if (m_pRcvQueue->recvfrom(m_SocketID, response) > 0)
+	  // 从接收缓存里面去取报文
+      if (m_pRcvQueue->recvfrom(m_SocketID, response) > 0) 
       {
+         // 根据返回的报文再次连接(第二次连接请求，根据返回来的报文，提取其中的cookie放入请求报文中发送到对端)
          if (connect(response) <= 0)
             break;
 
@@ -667,6 +679,7 @@ void CUDT::connect(const sockaddr* serv_addr)
          m_llLastReqTime = 0;
       }
 
+      // 大于ttl = 3s 则超时抛出异常
       if (CTimer::getTime() > ttl)
       {
          // timeout
@@ -698,6 +711,7 @@ int CUDT::connect(const CPacket& response) throw ()
    // returning -1 means there is an error.
    // returning 1 or 2 means the connection is in process and needs more handshake
 
+   // 检查cudt是否处于连接状态
    if (!m_bConnecting)
       return -1;
 
@@ -713,6 +727,7 @@ int CUDT::connect(const CPacket& response) throw ()
 
    m_ConnRes.deserialize(response.m_pcData, response.getLength());
 
+   // 这里使用的是client server模式 m_bRendezvous是会合模式false
    if (m_bRendezvous)
    {
       // regular connect should NOT communicate with rendezvous connect
@@ -730,6 +745,7 @@ int CUDT::connect(const CPacket& response) throw ()
    }
    else
    {
+      // 收到server端返回的数据,server端懈怠了cookie
       // set cookie
       if (1 == m_ConnRes.m_iReqType)
       {
