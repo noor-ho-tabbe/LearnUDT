@@ -485,8 +485,11 @@ void CUDT::open()
 {
    CGuard cg(m_ConnectionLock);
 
+   // 初始化
    // Initial sequence number, loss, acknowledgement, etc.
+   // pkt 大小
    m_iPktSize = m_iMSS - 28;
+   // 载荷大小
    m_iPayloadSize = m_iPktSize - CPacket::m_iPktHdrSize;
 
    m_iEXPCount = 1;
@@ -542,6 +545,7 @@ void CUDT::open()
    m_ullTargetTime = 0;
    m_ullTimeDiff = 0;
 
+   // 设置好这些初始信息后 CUDT为打开状态
    // Now UDT is opened.
    m_bOpened = true;
 }
@@ -550,6 +554,7 @@ void CUDT::listen()
 {
    CGuard cg(m_ConnectionLock);
 
+   // CUDT没打开则抛出异常
    if (!m_bOpened)
       throw CUDTException(5, 0, 0);
 

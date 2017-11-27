@@ -501,16 +501,19 @@ UDTSTATUS CUDTUnited::getStatus(const UDTSOCKET u)
 
 int CUDTUnited::bind(const UDTSOCKET u, const sockaddr* name, int namelen)
 {
+   // 通过UDTSOCKET找到CUDTSocket，为空抛出异常
    CUDTSocket* s = locate(u);
    if (NULL == s)
       throw CUDTException(5, 4, 0);
 
    CGuard cg(s->m_ControlLock);
 
+   // 确保CUDTSocket初始化状态为INIT
    // cannot bind a socket more than once
    if (INIT != s->m_Status)
       throw CUDTException(5, 0, 0);
 
+   // 检查IPversion
    // check the size of SOCKADDR structure
    if (AF_INET == s->m_iIPversion)
    {
@@ -576,16 +579,19 @@ int CUDTUnited::bind(UDTSOCKET u, UDPSOCKET udpsock)
 
 int CUDTUnited::listen(const UDTSOCKET u, int backlog)
 {
+   // 通过UDTSOCKET找到CUDTSocket
    CUDTSocket* s = locate(u);
    if (NULL == s)
       throw CUDTException(5, 4, 0);
 
    CGuard cg(s->m_ControlLock);
 
+   // 如果处于CUDTSocket处于LISTENING状态，直接返回
    // do nothing if the socket is already listening
    if (LISTENING == s->m_Status)
       return 0;
 
+   // 如果处于CUDTSocket没打开，抛异常，说明还没绑定成功
    // a socket can listen only if is in OPENED status
    if (OPENED != s->m_Status)
       throw CUDTException(5, 5, 0);
@@ -594,6 +600,7 @@ int CUDTUnited::listen(const UDTSOCKET u, int backlog)
    if (s->m_pUDT->m_bRendezvous)
       throw CUDTException(5, 7, 0);
 
+   // 同时处理最大等待的连接数
    if (backlog <= 0)
       throw CUDTException(5, 3, 0);
 
@@ -601,7 +608,11 @@ int CUDTUnited::listen(const UDTSOCKET u, int backlog)
 
    try
    {
+      
+      // Listening的UDT Socket的连接已经成功建立但还未通过UDT::accept()
+      // 返回给应用程序的UDT Socket的集合；
       s->m_pQueuedSockets = new set<UDTSOCKET>;
+	  // 而后者则是已经通过UDT::accept()返回给应用程序的UDT Socket的集合。
       s->m_pAcceptSockets = new set<UDTSOCKET>;
    }
    catch (...)
@@ -613,6 +624,7 @@ int CUDTUnited::listen(const UDTSOCKET u, int backlog)
 
    s->m_pUDT->listen();
 
+   // 至此 CUDTSocket处于监听状态了
    s->m_Status = LISTENING;
 
    return 0;
