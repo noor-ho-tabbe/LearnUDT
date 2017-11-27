@@ -589,10 +589,12 @@ void CUDT::connect(const sockaddr* serv_addr)
 
    // register this socket in the rendezvous queue
    // RendezevousQueue is used to temporarily store incoming handshake, non-rendezvous connections also require this function
+   // ttl设置为3s
    uint64_t ttl = 3000000;
    if (m_bRendezvous)
       ttl *= 10;
    ttl += CTimer::getTime();
+   // 把m_SocketID m_iIPversion serv_addr ttl存入CRendezvousQueue中
    m_pRcvQueue->registerConnector(m_SocketID, this, m_iIPversion, serv_addr, ttl);
 
    // 握手报文信息
@@ -601,7 +603,7 @@ void CUDT::connect(const sockaddr* serv_addr)
    m_ConnReq.m_iType = m_iSockType;    // socket类型
    m_ConnReq.m_iMSS = m_iMSS;          // mss值  
    m_ConnReq.m_iFlightFlagSize = (m_iRcvBufSize < m_iFlightFlagSize)? m_iRcvBufSize : m_iFlightFlagSize;
-   m_ConnReq.m_iReqType = (!m_bRendezvous) ? 1 : 0; // 请求类型
+   m_ConnReq.m_iReqType = (!m_bRendezvous) ? 1 : 0; // 请求类型 这里是 1
    m_ConnReq.m_iID = m_SocketID; // socketID
    CIPAddress::ntop(serv_addr, m_ConnReq.m_piPeerIP, m_iIPversion);
 
@@ -745,10 +747,11 @@ int CUDT::connect(const CPacket& response) throw ()
    }
    else
    {
-      // 收到server端返回的数据,server端懈怠了cookie
+      // 收到server端返回的数据,设置cookie
       // set cookie
       if (1 == m_ConnRes.m_iReqType)
       {
+         // 这里把m_ConnReq.m_iReqType设置成-1,服务端收到后会返回-1
          m_ConnReq.m_iReqType = -1;
          m_ConnReq.m_iCookie = m_ConnRes.m_iCookie;
          m_llLastReqTime = 0;
