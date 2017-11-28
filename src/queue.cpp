@@ -1166,6 +1166,7 @@ int CRcvQueue::setListener(CUDT* u)
    if (NULL != m_pListener)
       return -1;
 
+   // 设置接收队列CRcvQueue的Listener。 
    m_pListener = u;
    return 0;
 }

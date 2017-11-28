@@ -653,22 +653,27 @@ UDTSOCKET CUDTUnited::accept(const UDTSOCKET listen, sockaddr* addr, int* addrle
 
    // !!only one conection can be set up each time!!
    #ifndef WIN32
+      // 循环等待其他节点的连接
       while (!accepted)
       {
          pthread_mutex_lock(&(ls->m_AcceptLock));
 
+         // socket没在监听状态或者管道破裂
          if ((LISTENING != ls->m_Status) || ls->m_pUDT->m_bBroken)
          {
             // This socket has been closed.
             accepted = true;
          }
+		 // 如果ls->m_pQueuedSockets中有新的SOCKET
          else if (ls->m_pQueuedSockets->size() > 0)
          {
             u = *(ls->m_pQueuedSockets->begin());
+			// 当有新的UDT SOCKET的时候，把UDT Socket从ls->m_pQueuedSockets移到ls->m_pAcceptSockets
             ls->m_pAcceptSockets->insert(ls->m_pAcceptSockets->end(), u);
             ls->m_pQueuedSockets->erase(ls->m_pQueuedSockets->begin());
             accepted = true;
          }
+		 // 同步状态的时候会尽快结束，不管是否连接
          else if (!ls->m_pUDT->m_bSynRecving)
          {
             accepted = true;
@@ -732,10 +737,11 @@ UDTSOCKET CUDTUnited::accept(const UDTSOCKET listen, sockaddr* addr, int* addrle
       else
          *addrlen = sizeof(sockaddr_in6);
 
+      // 拷贝对端地址的信息
       // copy address information of peer node
       memcpy(addr, locate(u)->m_pPeerAddr, *addrlen);
    }
-
+   // 返回对端的UDT Socket
    return u;
 }
 
