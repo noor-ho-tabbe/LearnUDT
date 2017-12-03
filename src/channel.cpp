@@ -91,6 +91,7 @@ CChannel::~CChannel()
 
 void CChannel::open(const sockaddr* addr)
 {
+   // m_iSocket是底层UDP socket，这个socket可以收发数据
    // construct an socket
    m_iSocket = ::socket(m_iIPversion, SOCK_DGRAM, 0);
 
@@ -105,6 +106,7 @@ void CChannel::open(const sockaddr* addr)
    {
       socklen_t namelen = m_iSockAddrSize;
 
+      // 把这个socket和服务器地址绑定
       if (0 != ::bind(m_iSocket, addr, namelen))
          throw CUDTException(1, 3, NET_ERROR);
    }

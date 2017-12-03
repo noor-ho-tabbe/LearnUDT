@@ -42,6 +42,7 @@ int main(int argc, char* argv[])
    hints.ai_socktype = SOCK_STREAM;
    //hints.ai_socktype = SOCK_DGRAM;
 
+   // 设置服务器的端口
    string service("9000");
    if (2 == argc)
       service = argv[1];

@@ -263,7 +263,9 @@ UDTSOCKET CUDTUnited::newSocket(int af, int type)
 
    try
    {
+      // 创建一个CUDTSocket
       ns = new CUDTSocket;
+	  // 创建一个CUDT对象
       ns->m_pUDT = new CUDT;
       if (AF_INET == af)
       {
@@ -283,7 +285,7 @@ UDTSOCKET CUDTUnited::newSocket(int af, int type)
    }
 
    CGuard::enterCS(m_IDLock);
-   // 分配一个随机的socketid
+   // 分配一个随机的socketid    也就是 UDTSOCKET的值
    ns->m_SocketID = -- m_SocketID;
    CGuard::leaveCS(m_IDLock);
 
@@ -527,9 +529,11 @@ int CUDTUnited::bind(const UDTSOCKET u, const sockaddr* name, int namelen)
    }
 
    s->m_pUDT->open();
+   // 这个函数里面主要是创建真正的socket和进行bind操作
    updateMux(s, name);
    s->m_Status = OPENED;
 
+   // 获取SOCKET对应的IP地址信息
    // copy address information of local node
    s->m_pUDT->m_pSndQueue->m_pChannel->getSockAddr(s->m_pSelfAddr);
 
@@ -604,6 +608,7 @@ int CUDTUnited::listen(const UDTSOCKET u, int backlog)
    if (backlog <= 0)
       throw CUDTException(5, 3, 0);
 
+   // 设置backlog 这个主要是设置对端握手报文的最大缓冲区
    s->m_uiBackLog = backlog;
 
    try
@@ -1431,24 +1436,30 @@ void CUDTUnited::updateMux(CUDTSocket* s, const sockaddr* addr, const UDPSOCKET*
       }
    }
 
+   // 创建一个分发器
    // a new multiplexer is needed
    CMultiplexer m;
+   // 设置分发器的一些属性 
    m.m_iMSS = s->m_pUDT->m_iMSS;
    m.m_iIPversion = s->m_pUDT->m_iIPversion;
    m.m_iRefCount = 1;
    m.m_bReusable = s->m_pUDT->m_bReuseAddr;
-   m.m_iID = s->m_SocketID;
+   m.m_iID = s->m_SocketID; // 实现了关联
 
+   // 创建一个 CChannel
    m.m_pChannel = new CChannel(s->m_pUDT->m_iIPversion);
+   // 用UDT的缓冲区设置CChannel(UDP)的发送缓冲区
    m.m_pChannel->setSndBufSize(s->m_pUDT->m_iUDPSndBufSize);
+   // 设置CChannel的接收缓冲区
    m.m_pChannel->setRcvBufSize(s->m_pUDT->m_iUDPRcvBufSize);
 
    try
    {
+      // 设置socket的一些属性
       if (NULL != udpsock)
          m.m_pChannel->open(*udpsock);
       else
-         m.m_pChannel->open(addr);
+         m.m_pChannel->open(addr); //真正的socket绑定操作
    }
    catch (CUDTException& e)
    {
@@ -1471,6 +1482,7 @@ void CUDTUnited::updateMux(CUDTSocket* s, const sockaddr* addr, const UDPSOCKET*
 
    m_mMultiplexer[m.m_iID] = m;
 
+   // UDT SOCKET 发送队列和 真正的UDP socket发送队列关联起来
    s->m_pUDT->m_pSndQueue = m.m_pSndQueue;
    s->m_pUDT->m_pRcvQueue = m.m_pRcvQueue;
    s->m_iMuxID = m.m_iID;
@@ -1489,6 +1501,7 @@ void CUDTUnited::updateMux(CUDTSocket* s, const CUDTSocket* ls)
       {
          // reuse the existing multiplexer
          ++ i->second.m_iRefCount;
+		 // 让CUDT对象发送队列和CMultiplexer的发送队列关联起来
          s->m_pUDT->m_pSndQueue = i->second.m_pSndQueue;
          s->m_pUDT->m_pRcvQueue = i->second.m_pRcvQueue;
          s->m_iMuxID = i->second.m_iID;
