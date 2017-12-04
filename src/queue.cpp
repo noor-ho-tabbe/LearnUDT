@@ -520,6 +520,7 @@ void CSndQueue::init(CChannel* c, CTimer* t)
 
    while (!self->m_bClosing)
    {
+      // 查看最近的一次发送任务所需要执行的时间ts
       uint64_t ts = self->m_pSndUList->getNextProcTime();
 
       if (ts > 0)
@@ -533,9 +534,10 @@ void CSndQueue::init(CChannel* c, CTimer* t)
          // it is time to send the next pkt
          sockaddr* addr;
          CPacket pkt;
+		 // 从发送列表里面取出一个package
          if (self->m_pSndUList->pop(addr, pkt) < 0)
             continue;
-
+         // 发送这个package
          self->m_pChannel->sendto(addr, pkt);
       }
       else

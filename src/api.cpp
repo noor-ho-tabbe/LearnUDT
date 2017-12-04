@@ -1476,9 +1476,10 @@ void CUDTUnited::updateMux(CUDTSocket* s, const sockaddr* addr, const UDPSOCKET*
    m.m_pTimer = new CTimer;
 
    m.m_pSndQueue = new CSndQueue;
+   // 发送队列初始化 创建worker线程
    m.m_pSndQueue->init(m.m_pChannel, m.m_pTimer);
    m.m_pRcvQueue = new CRcvQueue;
-   // 接收队列初始化
+   // 接收队列初始化 创建worker线程
    m.m_pRcvQueue->init(32, s->m_pUDT->m_iPayloadSize, m.m_iIPversion, 1024, m.m_pChannel, m.m_pTimer);
 
    m_mMultiplexer[m.m_iID] = m;
