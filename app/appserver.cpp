@@ -99,8 +99,9 @@ int main(int argc, char* argv[])
 
       #ifndef WIN32
          pthread_t rcvthread;
-	  // 客户端连接成功起一个线程去接收数据
+	     // 客户端连接成功起一个线程去接收数据
          pthread_create(&rcvthread, NULL, recvdata, new UDTSOCKET(recver));
+	     // pthread_detach线程rcvthread结束后会释放资源不会阻塞
          pthread_detach(rcvthread);
       #else
          CreateThread(NULL, 0, recvdata, new UDTSOCKET(recver), 0, NULL);
@@ -118,6 +119,7 @@ void* recvdata(void* usocket)
 DWORD WINAPI recvdata(LPVOID usocket)
 #endif
 {
+   // 这里为什么要删掉呢？？？
    UDTSOCKET recver = *(UDTSOCKET*)usocket;
    delete (UDTSOCKET*)usocket;
 
@@ -133,6 +135,7 @@ DWORD WINAPI recvdata(LPVOID usocket)
       {
          int rcv_size;
          int var_size = sizeof(int);
+		 // 获取套接字的选项 获取接收缓冲区中的数据大小rcv_size
          UDT::getsockopt(recver, 0, UDT_RCVDATA, &rcv_size, &var_size);
          if (UDT::ERROR == (rs = UDT::recv(recver, data + rsize, size - rsize, 0)))
          {

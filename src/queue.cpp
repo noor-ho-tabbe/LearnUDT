@@ -953,6 +953,7 @@ void CRcvQueue::init(int qsize, int payload, int version, int hsize, CChannel* c
    m_pRendezvousQueue = new CRendezvousQueue;
 
    #ifndef WIN32
+      // 创建worker线程
       if (0 != pthread_create(&m_WorkerThread, NULL, CRcvQueue::worker, this))
       {
          m_WorkerThread = 0;

@@ -1168,27 +1168,32 @@ int CUDT::recv(char* data, int len)
    if (UDT_DGRAM == m_iSockType)
       throw CUDTException(5, 10, 0);
 
+   // 检查连接状态
    // throw an exception if not connected
    if (!m_bConnected)
       throw CUDTException(2, 2, 0);
-   else if ((m_bBroken || m_bClosing) && (0 == m_pRcvBuffer->getRcvDataSize()))
+   else if ((m_bBroken || m_bClosing) && (0 == m_pRcvBuffer->getRcvDataSize())) // 如果获得的数据为0则抛出异常
       throw CUDTException(2, 1, 0);
 
+   // 数据长度小于零则返回
    if (len <= 0)
       return 0;
 
    CGuard recvguard(m_RecvLock);
 
+   // 如果接收缓存中没有数据
    if (0 == m_pRcvBuffer->getRcvDataSize())
    {
+      // 非同步模式，默认同步模式
       if (!m_bSynRecving)
          throw CUDTException(6, 2, 0);
       else
       {
          #ifndef WIN32
             pthread_mutex_lock(&m_RecvDataLock);
-            if (m_iRcvTimeOut < 0) 
+            if (m_iRcvTimeOut < 0) // 默认m_iRcvTimeOut = -1
             { 
+               // 当缓冲区没有数据的时候等待！直到有数据
                while (!m_bBroken && m_bConnected && !m_bClosing && (0 == m_pRcvBuffer->getRcvDataSize()))
                   pthread_cond_wait(&m_RecvDataCond, &m_RecvDataLock);
             }
@@ -1236,14 +1241,17 @@ int CUDT::recv(char* data, int len)
    else if ((m_bBroken || m_bClosing) && (0 == m_pRcvBuffer->getRcvDataSize()))
       throw CUDTException(2, 1, 0);
 
+   // 读取缓冲区中的数据
    int res = m_pRcvBuffer->readBuffer(data, len);
 
+   // 缓冲区中没有数据
    if (m_pRcvBuffer->getRcvDataSize() <= 0)
    {
       // read is not available any more
       s_UDTUnited.m_EPoll.update_events(m_SocketID, m_sPollID, UDT_EPOLL_IN, false);
    }
 
+   // 超时
    if ((res <= 0) && (m_iRcvTimeOut >= 0))
       throw CUDTException(6, 3, 0);
 
