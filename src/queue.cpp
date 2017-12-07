@@ -510,6 +510,7 @@ void CSndQueue::init(CChannel* c, CTimer* t)
    #endif
 }
 
+
 #ifndef WIN32
    void* CSndQueue::worker(void* param)
 #else
@@ -534,7 +535,7 @@ void CSndQueue::init(CChannel* c, CTimer* t)
          // it is time to send the next pkt
          sockaddr* addr;
          CPacket pkt;
-		 // 从发送列表里面取出一个package
+		 // 从发送列表里面取出一个包发送 addr是服务器端地址
          if (self->m_pSndUList->pop(addr, pkt) < 0)
             continue;
          // 发送这个package
