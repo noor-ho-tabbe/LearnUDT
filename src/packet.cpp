@@ -185,6 +185,7 @@ void CPacket::setLength(int len)
 void CPacket::pack(int pkttype, void* lparam, void* rparam, int size)
 {
    // Set (bit-0 = 1) and (bit-1~15 = type)
+   // hearder由4个4字节组成 一共128bit           bkttype = 0
    m_nHeader[0] = 0x80000000 | (pkttype << 16);
 
    // Set additional information and control information field
@@ -235,7 +236,7 @@ void CPacket::pack(int pkttype, void* lparam, void* rparam, int size)
       m_PacketVector[1].iov_len = 4; //0;
 
       break;
-
+   // 表示报文类型为握手报文
    case 0: //0000 - Handshake
       // control info filed is handshake info
       m_PacketVector[1].iov_base = (char *)rparam;
@@ -374,9 +375,9 @@ int CHandShake::serialize(char* buf, int& size)
       return -1;
 
    int32_t* p = (int32_t*)buf;
-   *p++ = m_iVersion;
-   *p++ = m_iType;
-   *p++ = m_iISN;
+   *p++ = m_iVersion;  // UDT版本
+   *p++ = m_iType;     // ID
+   *p++ = m_iISN;      // 
    *p++ = m_iMSS;
    *p++ = m_iFlightFlagSize;
    *p++ = m_iReqType;

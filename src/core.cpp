@@ -102,7 +102,7 @@ CUDT::CUDT()
    m_iMSS = 1500;
    m_bSynSending = true;
    m_bSynRecving = true;
-   m_iFlightFlagSize = 25600;
+   m_iFlightFlagSize = 25600;  // 滑动窗口大小
    m_iSndBufSize = 8192;
    m_iRcvBufSize = 8192; //Rcv buffer MUST NOT be bigger than Flight Flag size
    m_Linger.l_onoff = 1;
@@ -586,7 +586,7 @@ void CUDT::connect(const sockaddr* serv_addr)
    if (m_bConnecting || m_bConnected)
       throw CUDTException(5, 2, 0);
 
-   // record peer/server address
+   // record peer/server address\
    delete m_pPeerAddr;
    // 拷贝服务器的地址进入m_pPeerAddr中
    m_pPeerAddr = (AF_INET == m_iIPversion) ? (sockaddr*)new sockaddr_in : (sockaddr*)new sockaddr_in6;
@@ -608,6 +608,7 @@ void CUDT::connect(const sockaddr* serv_addr)
    m_ConnReq.m_iType = m_iSockType;    // socket类型
    m_ConnReq.m_iMSS = m_iMSS;          // mss值  
    m_ConnReq.m_iFlightFlagSize = (m_iRcvBufSize < m_iFlightFlagSize)? m_iRcvBufSize : m_iFlightFlagSize;
+   printf()
    m_ConnReq.m_iReqType = (!m_bRendezvous) ? 1 : 0; // 请求类型 这里是 1
    m_ConnReq.m_iID = m_SocketID; // socketID
    CIPAddress::ntop(serv_addr, m_ConnReq.m_piPeerIP, m_iIPversion);
@@ -628,6 +629,7 @@ void CUDT::connect(const sockaddr* serv_addr)
    // Inform the server my configurations.
    CPacket request;
    char* reqdata = new char [m_iPayloadSize];
+   // 打包操作^_^
    request.pack(0, NULL, reqdata, m_iPayloadSize);
    // ID = 0 表示一个控制包
    // ID = 0, connection request
@@ -771,8 +773,8 @@ POST_CONNECT:
    // Re-configure according to the negotiated values.
    m_iMSS = m_ConnRes.m_iMSS;
    m_iFlowWindowSize = m_ConnRes.m_iFlightFlagSize;
-   m_iPktSize = m_iMSS - 28;
-   m_iPayloadSize = m_iPktSize - CPacket::m_iPktHdrSize;
+   m_iPktSize = m_iMSS - 28; // 1500 -28
+   m_iPayloadSize = m_iPktSize - CPacket::m_iPktHdrSize; // 1500-28-16 = 1456
    m_iPeerISN = m_ConnRes.m_iISN;
    m_iRcvLastAck = m_ConnRes.m_iISN;
    m_iRcvLastAckAck = m_ConnRes.m_iISN;
