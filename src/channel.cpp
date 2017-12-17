@@ -231,13 +231,16 @@ void CChannel::getPeerAddr(sockaddr* addr) const
 int CChannel::sendto(const sockaddr* addr, CPacket& packet) const
 {
    // convert control information into network order
+   // 如果是控制包  把包的内容进行网络字节序转换
    if (packet.getFlag())
       for (int i = 0, n = packet.getLength() / 4; i < n; ++ i)
-         *((uint32_t *)packet.m_pcData + i) = htonl(*((uint32_t *)packet.m_pcData + i));
+         *((uint32_t *)packet.m_pcData + i) = htonl(*((uint32_t *)packet.m_pcData + i));  // 这种强转学习了！
 
    // convert packet header into network order
    //for (int j = 0; j < 4; ++ j)
    //   packet.m_nHeader[j] = htonl(packet.m_nHeader[j]);
+
+   // 把UDT头进行网络字节序转换，转化成网络字节序 
    uint32_t* p = packet.m_nHeader;
    for (int j = 0; j < 4; ++ j)
    {

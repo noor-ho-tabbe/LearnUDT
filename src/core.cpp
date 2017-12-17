@@ -608,9 +608,9 @@ void CUDT::connect(const sockaddr* serv_addr)
    m_ConnReq.m_iType = m_iSockType;    // socket类型
    m_ConnReq.m_iMSS = m_iMSS;          // mss值  
    m_ConnReq.m_iFlightFlagSize = (m_iRcvBufSize < m_iFlightFlagSize)? m_iRcvBufSize : m_iFlightFlagSize;
-   printf()
    m_ConnReq.m_iReqType = (!m_bRendezvous) ? 1 : 0; // 请求类型 这里是 1
    m_ConnReq.m_iID = m_SocketID; // socketID
+   // 把IP地址转化成字符串存放在m_ConnReq.m_piPeerIP中
    CIPAddress::ntop(serv_addr, m_ConnReq.m_piPeerIP, m_iIPversion);
 
    // 初始化一个序列号，即包的编号

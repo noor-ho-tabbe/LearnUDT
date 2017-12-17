@@ -162,8 +162,8 @@ __pad()
 {
    for (int i = 0; i < 4; ++ i)
       m_nHeader[i] = 0;
-   m_PacketVector[0].iov_base = (char *)m_nHeader;
-   m_PacketVector[0].iov_len = CPacket::m_iPktHdrSize;
+   m_PacketVector[0].iov_base = (char *)m_nHeader;       // m_PacketVector[0]存放header
+   m_PacketVector[0].iov_len = CPacket::m_iPktHdrSize;   // 大小等于m_iPktHdrSize = 16 个字节
    m_PacketVector[1].iov_base = NULL;
    m_PacketVector[1].iov_len = 0;
 }
@@ -375,16 +375,16 @@ int CHandShake::serialize(char* buf, int& size)
       return -1;
 
    int32_t* p = (int32_t*)buf;
-   *p++ = m_iVersion;  // UDT版本
-   *p++ = m_iType;     // ID
-   *p++ = m_iISN;      // 
-   *p++ = m_iMSS;
-   *p++ = m_iFlightFlagSize;
-   *p++ = m_iReqType;
-   *p++ = m_iID;
-   *p++ = m_iCookie;
+   *p++ = m_iVersion;  // UDT版本 4
+   *p++ = m_iType;     // 数据类型 DGRAM
+   *p++ = m_iISN;      // 初始包序列号
+   *p++ = m_iMSS;      // MTU 1500
+   *p++ = m_iFlightFlagSize; // 滑动窗口大小 8192
+   *p++ = m_iReqType; // 请求类型 1
+   *p++ = m_iID;      // ID 
+   *p++ = m_iCookie;  // cookie
    for (int i = 0; i < 4; ++ i)
-      *p++ = m_piPeerIP[i];
+      *p++ = m_piPeerIP[i];    // 对端IP地址
 
    size = m_iContentSize;
 
