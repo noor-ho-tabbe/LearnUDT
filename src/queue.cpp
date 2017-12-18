@@ -90,8 +90,11 @@ int CUnitQueue::init(int size, int mss, int version)
 
    try
    {
+      // 分配一个CQEntry对象
       tempq = new CQEntry;
+	  // 一个size大小的CUnit数组
       tempu = new CUnit [size];
+	  // 一段长度为 size * mss的缓冲区 这里size表示数据包的个数32， 32个  一次能装32个数据包 
       tempb = new char [size * mss];
    }
    catch (...)
@@ -105,6 +108,7 @@ int CUnitQueue::init(int size, int mss, int version)
 
    for (int i = 0; i < size; ++ i)
    {
+      // 初始化CUnit 32个CUnit 每个CUnit对应一段内存，大小为1500
       tempu[i].m_iFlag = 0;
       tempu[i].m_Packet.m_pcData = tempb + i * mss;
    }
@@ -956,7 +960,7 @@ void CRcvQueue::init(int qsize, int payload, int version, int hsize, CChannel* c
    m_pRendezvousQueue = new CRendezvousQueue;
 
    #ifndef WIN32
-      // 创建worker线程
+      // 创建worker接收线程
       if (0 != pthread_create(&m_WorkerThread, NULL, CRcvQueue::worker, this))
       {
          m_WorkerThread = 0;
@@ -978,6 +982,7 @@ void CRcvQueue::init(int qsize, int payload, int version, int hsize, CChannel* c
 {
    CRcvQueue* self = (CRcvQueue*)param;
 
+   // 判断ipv4 或者 ipv6
    sockaddr* addr = (AF_INET == self->m_UnitQueue.m_iIPversion) ? (sockaddr*) new sockaddr_in : (sockaddr*) new sockaddr_in6;
    CUDT* u = NULL;
    int32_t id;

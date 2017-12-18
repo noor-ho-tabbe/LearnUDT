@@ -258,6 +258,7 @@ int CChannel::sendto(const sockaddr* addr, CPacket& packet) const
       mh.msg_controllen = 0;
       mh.msg_flags = 0;
 
+       // UDP发送接口
       int res = ::sendmsg(m_iSocket, &mh, 0);
    #else
       DWORD size = CPacket::m_iPktHdrSize + packet.getLength();
@@ -266,6 +267,7 @@ int CChannel::sendto(const sockaddr* addr, CPacket& packet) const
       res = (0 == res) ? size : -1;
    #endif
 
+   // 还原字节序把转换的网络字节序转化为主机字节序
    // convert back into local host order
    //for (int k = 0; k < 4; ++ k)
    //   packet.m_nHeader[k] = ntohl(packet.m_nHeader[k]);

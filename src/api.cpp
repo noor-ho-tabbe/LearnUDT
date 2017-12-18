@@ -672,10 +672,10 @@ UDTSOCKET CUDTUnited::accept(const UDTSOCKET listen, sockaddr* addr, int* addrle
 		 // 如果ls->m_pQueuedSockets中有新的SOCKET
          else if (ls->m_pQueuedSockets->size() > 0)
          {
-            u = *(ls->m_pQueuedSockets->begin());
+            u = *(ls->m_pQueuedSockets->begin()); // 取出头部的数据
 			// 当有新的UDT SOCKET的时候，把UDT Socket从ls->m_pQueuedSockets移到ls->m_pAcceptSockets
-            ls->m_pAcceptSockets->insert(ls->m_pAcceptSockets->end(), u);
-            ls->m_pQueuedSockets->erase(ls->m_pQueuedSockets->begin());
+            ls->m_pAcceptSockets->insert(ls->m_pAcceptSockets->end(), u); // 把数据插入到尾部
+            ls->m_pQueuedSockets->erase(ls->m_pQueuedSockets->begin());   // 删除队列中的数据
             accepted = true;
          }
 		 // 同步状态的时候会尽快结束，不管是否连接
