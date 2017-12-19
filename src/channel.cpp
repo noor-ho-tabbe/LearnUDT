@@ -308,7 +308,7 @@ int CChannel::recvfrom(sockaddr* addr, CPacket& packet) const
          tv.tv_usec = 10000;
          ::select(m_iSocket+1, &set, NULL, &set, &tv);
       #endif
-
+      // UDP从socket接收数据
       int res = ::recvmsg(m_iSocket, &mh, 0);
    #else
       DWORD size = CPacket::m_iPktHdrSize + packet.getLength();

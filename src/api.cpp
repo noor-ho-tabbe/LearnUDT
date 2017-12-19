@@ -1441,7 +1441,7 @@ void CUDTUnited::updateMux(CUDTSocket* s, const sockaddr* addr, const UDPSOCKET*
    CMultiplexer m;
    // 设置分发器的一些属性 
    m.m_iMSS = s->m_pUDT->m_iMSS;
-   m.m_iIPversion = s->m_pUDT->m_iIPversion;
+   m.m_iIPversion = s->m_pUDT->m_iIPversion; // 设置ip version
    m.m_iRefCount = 1;
    m.m_bReusable = s->m_pUDT->m_bReuseAddr;
    m.m_iID = s->m_SocketID; // 实现了关联

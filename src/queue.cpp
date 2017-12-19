@@ -205,6 +205,7 @@ CUnit* CUnitQueue::getNextAvailUnit()
 
    CQEntry* entrance = m_pCurrQueue;
 
+   // 取出一个Cunit用来装数据
    do
    {
       for (CUnit* sentinel = m_pCurrQueue->m_pUnit + m_pCurrQueue->m_iSize - 1; m_pAvailUnit != sentinel; ++ m_pAvailUnit)
@@ -220,7 +221,7 @@ CUnit* CUnitQueue::getNextAvailUnit()
       m_pCurrQueue = m_pCurrQueue->m_pNext;
       m_pAvailUnit = m_pCurrQueue->m_pUnit;
    } while (m_pCurrQueue != entrance);
-
+   // Cunit不够用创建新的,会创建32个Cunit
    increase();
 
    return NULL;
@@ -982,7 +983,7 @@ void CRcvQueue::init(int qsize, int payload, int version, int hsize, CChannel* c
 {
    CRcvQueue* self = (CRcvQueue*)param;
 
-   // 判断ipv4 或者 ipv6
+   // 判断ipv4 或者 ipv6 创建 sockaddr_in或者sockaddr_in6 (最后都会强转为sockaddr)
    sockaddr* addr = (AF_INET == self->m_UnitQueue.m_iIPversion) ? (sockaddr*) new sockaddr_in : (sockaddr*) new sockaddr_in6;
    CUDT* u = NULL;
    int32_t id;
