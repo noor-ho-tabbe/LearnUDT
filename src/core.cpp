@@ -631,7 +631,7 @@ void CUDT::connect(const sockaddr* serv_addr)
    char* reqdata = new char [m_iPayloadSize];
    // 打包操作^_^
    request.pack(0, NULL, reqdata, m_iPayloadSize);
-   // ID = 0 表示一个控制包
+   // ID = 0 表示连接请求报文
    // ID = 0, connection request
    request.m_iID = 0;
 
@@ -2506,29 +2506,34 @@ int CUDT::listen(sockaddr* addr, CPacket& packet)
 {
    if (m_bClosing)
       return 1002;
-
+   // 校验握手报文的长度
    if (packet.getLength() != CHandShake::m_iContentSize)
       return 1004;
 
    CHandShake hs;
+   // 反序列化,把收到的报文取出来放好.w.
    hs.deserialize(packet.m_pcData, packet.getLength());
 
    // SYN cookie
    char clienthost[NI_MAXHOST];
    char clientport[NI_MAXSERV];
+   // 把sockaddr转化成字符串
    getnameinfo(addr, (AF_INET == m_iVersion) ? sizeof(sockaddr_in) : sizeof(sockaddr_in6), clienthost, sizeof(clienthost), clientport, sizeof(clientport), NI_NUMERICHOST|NI_NUMERICSERV);
    int64_t timestamp = (CTimer::getTime() - m_StartTime) / 60000000; // secret changes every one minute
    stringstream cookiestr;
    cookiestr << clienthost << ":" << clientport << ":" << timestamp;
    unsigned char cookie[16];
+   // 生成一个cookie
    CMD5::compute(cookiestr.str().c_str(), cookie);
 
    if (1 == hs.m_iReqType)
    {
+      // 设置cookie
       hs.m_iCookie = *(int*)cookie;
       packet.m_iID = hs.m_iID;
       int size = packet.getLength();
       hs.serialize(packet.m_pcData, size);
+	  // 把收到的包返回回去
       m_pSndQueue->sendto(addr, packet);
       return 0;
    }

@@ -308,7 +308,7 @@ int CChannel::recvfrom(sockaddr* addr, CPacket& packet) const
          tv.tv_usec = 10000;
          ::select(m_iSocket+1, &set, NULL, &set, &tv);
       #endif
-      // UDP从socket接收数据
+      // UDP从socket接收数据 res返回接收到的字节数
       int res = ::recvmsg(m_iSocket, &mh, 0);
    #else
       DWORD size = CPacket::m_iPktHdrSize + packet.getLength();
@@ -319,14 +319,17 @@ int CChannel::recvfrom(sockaddr* addr, CPacket& packet) const
       res = (0 == res) ? size : -1;
    #endif
 
+   // 失败
    if (res <= 0)
    {
       packet.setLength(-1);
       return -1;
    }
 
+   // 设置包的长度
    packet.setLength(res - CPacket::m_iPktHdrSize);
 
+   // 字节序转化，网络字节序转化为主机字节序
    // convert back into local host order
    //for (int i = 0; i < 4; ++ i)
    //   packet.m_nHeader[i] = ntohl(packet.m_nHeader[i]);
@@ -337,11 +340,13 @@ int CChannel::recvfrom(sockaddr* addr, CPacket& packet) const
       ++ p;
    }
 
+   // 检查数据包类型 数据包还是控制包 1:控制包 2:数据包
    if (packet.getFlag())
    {
+      // 把报文进行网络字节序转换，转化为主机字节序
       for (int j = 0, n = packet.getLength() / 4; j < n; ++ j)
          *((uint32_t *)packet.m_pcData + j) = ntohl(*((uint32_t *)packet.m_pcData + j));
    }
-
+   // 返回包的长度，不包括(UDT头IP,UDP头信息大小)
    return packet.getLength();
 }

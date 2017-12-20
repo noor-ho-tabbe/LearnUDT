@@ -1020,6 +1020,7 @@ void CRcvQueue::init(int qsize, int payload, int version, int hsize, CChannel* c
 
       unit->m_Packet.setLength(self->m_iPayloadSize);
 
+       // 接收数据      unit->m_Packet存放接收到的数据
       // reading next incoming packet, recvfrom returns -1 is nothing has been received
       if (self->m_pChannel->recvfrom(addr, unit->m_Packet) < 0)
          goto TIMER_CHECK;
