@@ -29,16 +29,20 @@ int main(int argc, char* argv[])
       return 0;
    }
 
+   // udT模块初始化
    // Automatically start up and clean up UDT module.
    UDTUpDown _udt_;
 
+   // 存放地址的一些详细信息
    struct addrinfo hints, *local, *peer;
 
    memset(&hints, 0, sizeof(struct addrinfo));
 
+   // 如果设置了 AI_PASSIVE 标志,并且 nodename(域名或者ip地址) 是 NULL, 那么返回的socket地址可以用于的bind()函数
+   // 如果未设置AI_PASSIVE标志,返回的socket地址可以用于connect(), sendto(), 或者 sendmsg()函数
    hints.ai_flags = AI_PASSIVE;
-   hints.ai_family = AF_INET;
-   hints.ai_socktype = SOCK_STREAM;
+   hints.ai_family = AF_INET; // 指定返回的地址协议簇AF_INET(IPv4)、AF_INET6(IPv6)、AF_UNSPEC(IPv4 and IPv6)
+   hints.ai_socktype = SOCK_STREAM; // 设置SOCKET类型，这里是流模式 常用的有SOCK_STREAM、SOCK_DGRAM、SOCK_RAW,?设置为0表示所有类型都可以。
    //hints.ai_socktype = SOCK_DGRAM;
 
    if (0 != getaddrinfo(NULL, "9000", &hints, &local))
@@ -74,6 +78,7 @@ int main(int argc, char* argv[])
    
    freeaddrinfo(local);
 
+   // 获取IP地址信息放入peer中
    if (0 != getaddrinfo(argv[1], argv[2], &hints, &peer))
    {
       cout << "incorrect server/peer address. " << argv[1] << ":" << argv[2] << endl;

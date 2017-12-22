@@ -267,6 +267,7 @@ UDTSOCKET CUDTUnited::newSocket(int af, int type)
       ns = new CUDTSocket;
 	  // 创建一个CUDT对象
       ns->m_pUDT = new CUDT;
+	  // 创建ipv4或者ipv6
       if (AF_INET == af)
       {
          ns->m_pSelfAddr = (sockaddr*)(new sockaddr_in);
@@ -280,6 +281,7 @@ UDTSOCKET CUDTUnited::newSocket(int af, int type)
    }
    catch (...)
    {
+      // 异常情况把创建的对象删除
       delete ns;
       throw CUDTException(3, 2, 0);
    }
@@ -300,6 +302,7 @@ UDTSOCKET CUDTUnited::newSocket(int af, int type)
    CGuard::enterCS(m_ControlLock);
    try
    {
+      // UDTSOCKET 和 ns(CUDTSocket里面创建了真正的socket)对应起来
       m_Sockets[ns->m_SocketID] = ns;
    }
    catch (...)
@@ -308,13 +311,14 @@ UDTSOCKET CUDTUnited::newSocket(int af, int type)
       CGuard::leaveCS(m_ControlLock);
       delete ns;
       ns = NULL;
+	  // 删除后置空
    }
    CGuard::leaveCS(m_ControlLock);
 
    if (NULL == ns)
       throw CUDTException(3, 2, 0);
 
-   return ns->m_SocketID;
+   return ns->m_SocketID;// 返回一个随机的socketID,socketID和真的socket对应在一起了。
 }
 
 int CUDTUnited::newConnection(const UDTSOCKET listen, const sockaddr* peer, CHandShake* hs)

@@ -688,7 +688,7 @@ void CUDT::connect(const sockaddr* serv_addr)
          m_llLastReqTime = 0;
       }
 
-      // 大于ttl = 3s 则超时抛出异常
+      // 大于ttl = 3s 则超时抛出异常    也就是说最多会发送12次request报文
       if (CTimer::getTime() > ttl)
       {
          // timeout
