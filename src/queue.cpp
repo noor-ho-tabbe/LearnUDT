@@ -1025,6 +1025,7 @@ void CRcvQueue::init(int qsize, int payload, int version, int hsize, CChannel* c
       if (self->m_pChannel->recvfrom(addr, unit->m_Packet) < 0)
          goto TIMER_CHECK;
 
+      // m_Packet的ID为0表示connect request 
       id = unit->m_Packet.m_iID;
 
       // ID 0 is for connection request, which should be passed to the listening socket or rendezvous sockets
