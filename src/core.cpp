@@ -2531,6 +2531,7 @@ int CUDT::listen(sockaddr* addr, CPacket& packet)
       // 设置cookie
       hs.m_iCookie = *(int*)cookie;
       packet.m_iID = hs.m_iID;
+      printf("packet.m_iID:%d\n", packet.m_iID);
       int size = packet.getLength();
       hs.serialize(packet.m_pcData, size);
 	  // 把收到的包返回回去
