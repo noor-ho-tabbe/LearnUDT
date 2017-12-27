@@ -770,6 +770,7 @@ POST_CONNECT:
    // Remove from rendezvous queue
    m_pRcvQueue->removeConnector(m_SocketID);
 
+   // 重新配置包的信息
    // Re-configure according to the negotiated values.
    m_iMSS = m_ConnRes.m_iMSS;
    m_iFlowWindowSize = m_ConnRes.m_iFlightFlagSize;
@@ -828,7 +829,7 @@ POST_CONNECT:
    // register this socket for receiving data packets
    m_pRNode->m_bOnList = true;
    m_pRcvQueue->setNewEntry(this);
-
+   // 收到server端的第二个报文，握手连接成功
    // acknowledge the management module.
    s_UDTUnited.connect_complete(m_SocketID);
 
@@ -1973,6 +1974,7 @@ void CUDT::sendCtrl(int pkttype, void* lparam, void* rparam, int size)
    case 0: //000 - Handshake
       ctrlpkt.pack(pkttype, NULL, rparam, sizeof(CHandShake));
       ctrlpkt.m_iID = m_PeerID;
+      // 发送到对端
       m_pSndQueue->sendto(m_pPeerAddr, ctrlpkt);
 
       break;
@@ -2254,6 +2256,7 @@ void CUDT::processCtrl(CPacket& ctrlpkt)
          initdata.m_iISN = m_iISN;
          initdata.m_iMSS = m_iMSS;
          initdata.m_iFlightFlagSize = m_iFlightFlagSize;
+         // 返回m_iReqType -1 响应报文
          initdata.m_iReqType = (!m_bRendezvous) ? -1 : -2;
          initdata.m_iID = m_SocketID;
 

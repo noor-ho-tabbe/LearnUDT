@@ -1040,7 +1040,7 @@ void CRcvQueue::init(int qsize, int payload, int version, int hsize, CChannel* c
             if (!u->m_bSynRecving)
                u->connect(unit->m_Packet);
             else
-               self->storePkt(id, unit->m_Packet.clone());
+               self->storePkt(id, unit->m_Packet.clone()); // 保存接收到的数据包
          }
       }
       else if (id > 0)
@@ -1164,6 +1164,7 @@ int CRcvQueue::recvfrom(int32_t id, CPacket& packet)
 
    // remove this message from queue, 
    // if no more messages left for this socket, release its data structure
+   // 移除包
    i->second.pop();
    if (i->second.empty())
       m_mBuffer.erase(i);
@@ -1260,7 +1261,7 @@ void CRcvQueue::storePkt(int32_t id, CPacket* pkt)
       //avoid storing too many packets, in case of malfunction or attack
       if (i->second.size() > 16)
          return;
-
+      // 把收到的数据放入m_mBuffer
       i->second.push(pkt);
    }
 }

@@ -839,7 +839,7 @@ void CUDTUnited::connect_complete(const UDTSOCKET u)
    // otherwise if connect() fails, the multiplexer cannot be located by garbage collection and will cause leak
    s->m_pUDT->m_pSndQueue->m_pChannel->getSockAddr(s->m_pSelfAddr);
    CIPAddress::pton(s->m_pSelfAddr, s->m_pUDT->m_piSelfIP, s->m_iIPversion);
-
+   //修改状态为连接状态，至此UDT握手成功
    s->m_Status = CONNECTED;
 }
 
