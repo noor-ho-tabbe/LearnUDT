@@ -536,7 +536,7 @@ void CSndQueue::init(CChannel* c, CTimer* t)
 
    while (!self->m_bClosing)
    {
-      // 查看最近的一次发送任务所需要执行的时间ts
+      // 获取list中,处理下一个传输控制块的时间点 
       uint64_t ts = self->m_pSndUList->getNextProcTime();
 
       if (ts > 0)

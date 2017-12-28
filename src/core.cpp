@@ -2619,7 +2619,7 @@ void CUDT::checkTimers()
       m_iPktCount = 0;
       m_iLightACKCount = 1;
    }
-   else if (m_iSelfClockInterval * m_iLightACKCount <= m_iPktCount)
+   else if (m_iSelfClockInterval * m_iLightACKCount <= m_iPktConut)
    {
       //send a "light" ACK
       sendCtrl(2, NULL, NULL, 4);
