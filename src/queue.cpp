@@ -357,6 +357,13 @@ uint64_t CSndUList::getNextProcTime()
    return m_pHeap[0]->m_llTimeStamp;
 }
 
+// 往一个堆里面插入数据
+/*
+1.插入的时时候把数据放在数组的最后
+2.根据m_llTimeStamp的值调整堆的结构，把最小的上浮建立一个最小堆
+3.调整好堆以后(最小堆建立以后)唤醒worker线程
+4.如果是堆中的第一个元素唤醒等待在m_pWindowCond上的线程
+*/
 void CSndUList::insert_(int64_t ts, const CUDT* u)
 {
    CSNode* n = u->m_pSNode;
@@ -390,11 +397,11 @@ void CSndUList::insert_(int64_t ts, const CUDT* u)
    }
 
    n->m_iHeapLoc = q;
-
    // an earlier event has been inserted, wake up sending worker
    if (n->m_iHeapLoc == 0)
       m_pTimer->interrupt();
 
+   // 唤醒发送队列
    // first entry, activate the sending queue
    if (0 == m_iLastEntry)
    {
@@ -551,6 +558,7 @@ void CSndQueue::init(CChannel* c, CTimer* t)
       }
       else
       {
+         // 没有数据要发送，等待
          // wait here if there is no sockets with data to be sent
          #ifndef WIN32
             pthread_mutex_lock(&self->m_WindowLock);
