@@ -365,8 +365,11 @@ void CSndUList::insert_(int64_t ts, const CUDT* u)
    if (n->m_iHeapLoc >= 0)
       return;
 
+   // m_iLastEntry³õÊ¼Öµ-1
    m_iLastEntry ++;
+   // m_pHeap¼ÇÂ¼CSNode
    m_pHeap[m_iLastEntry] = n;
+   // ts == 1
    n->m_llTimeStamp = ts;
 
    int q = m_iLastEntry;
