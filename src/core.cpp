@@ -505,6 +505,7 @@ void CUDT::open()
    m_llTraceSent = m_llTraceRecv = m_iTraceSndLoss = m_iTraceRcvLoss = m_iTraceRetrans = m_iSentACK = m_iRecvACK = m_iSentNAK = m_iRecvNAK = 0;
    m_llSndDuration = m_llSndDurationTotal = 0;
 
+   // 节点初始化
    // structures for queue
    if (NULL == m_pSNode)
       m_pSNode = new CSNode;
@@ -2619,7 +2620,7 @@ void CUDT::checkTimers()
       m_iPktCount = 0;
       m_iLightACKCount = 1;
    }
-   else if (m_iSelfClockInterval * m_iLightACKCount <= m_iPktConut)
+   else if (m_iSelfClockInterval * m_iLightACKCount <= m_iPktCount)
    {
       //send a "light" ACK
       sendCtrl(2, NULL, NULL, 4);

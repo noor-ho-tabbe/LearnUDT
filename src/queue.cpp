@@ -304,7 +304,6 @@ void CSndUList::update(const CUDT* u, bool reschedule)
 
       remove_(u);
    }
-
    insert_(1, u);
 }
 
@@ -395,12 +394,10 @@ void CSndUList::insert_(int64_t ts, const CUDT* u)
       else
          break;
    }
-
    n->m_iHeapLoc = q;
    // an earlier event has been inserted, wake up sending worker
    if (n->m_iHeapLoc == 0)
       m_pTimer->interrupt();
-
    // 唤醒发送队列
    // first entry, activate the sending queue
    if (0 == m_iLastEntry)
@@ -538,6 +535,7 @@ void CSndQueue::init(CChannel* c, CTimer* t)
    {
       // 获取list中,处理下一个传输控制块的时间点 
       uint64_t ts = self->m_pSndUList->getNextProcTime();
+      printf("ts : %lld\n", ts);
 
       if (ts > 0)
       {
