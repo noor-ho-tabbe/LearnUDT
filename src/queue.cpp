@@ -326,6 +326,7 @@ int CSndUList::pop(sockaddr*& addr, CPacket& pkt)
    if (!u->m_bConnected || u->m_bBroken)
       return -1;
 
+   // 对数据打包
    // pack a packet from the socket
    if (u->packData(pkt, ts) <= 0)
       return -1;
@@ -398,7 +399,7 @@ void CSndUList::insert_(int64_t ts, const CUDT* u)
    // an earlier event has been inserted, wake up sending worker
    if (n->m_iHeapLoc == 0)
       m_pTimer->interrupt();
-   // 唤醒发送队列
+   // 唤醒worker发送队列
    // first entry, activate the sending queue
    if (0 == m_iLastEntry)
    {

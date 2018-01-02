@@ -2330,7 +2330,9 @@ int CUDT::packData(CPacket& packet, uint64_t& ts)
    if ((0 != m_ullTargetTime) && (entertime > m_ullTargetTime))
       m_ullTimeDiff += entertime - m_ullTargetTime;
 
+   // 丢包处理
    // Loss retransmission always has higher priority.
+   // 从丢失列表中取出一个丢失包的m_iSeqNo
    if ((packet.m_iSeqNo = m_pSndLossList->getLostSeq()) >= 0)
    {
       // protect m_iSndLastDataAck from updating by ACK processing
@@ -2366,10 +2368,11 @@ int CUDT::packData(CPacket& packet, uint64_t& ts)
       ++ m_iTraceRetrans;
       ++ m_iRetransTotal;
    }
-   else
+   else // 未丢包，正常情况下的处理
    {
       // If no loss, pack a new packet.
 
+      // 获取拥塞窗口大小
       // check congestion/flow window limit
       int cwnd = (m_iFlowWindowSize < (int)m_dCongestionWindow) ? m_iFlowWindowSize : (int)m_dCongestionWindow;
       if (cwnd >= CSeqNo::seqlen(m_iSndLastAck, CSeqNo::incseq(m_iSndCurrSeqNo)))
