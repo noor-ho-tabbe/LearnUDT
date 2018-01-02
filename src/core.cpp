@@ -2337,13 +2337,13 @@ int CUDT::packData(CPacket& packet, uint64_t& ts)
    {
       // protect m_iSndLastDataAck from updating by ACK processing
       CGuard ackguard(m_AckLock);
-
+      // 计算SeqNo与SndLastDataAck的差值
       int offset = CSeqNo::seqoff(m_iSndLastDataAck, packet.m_iSeqNo);
       if (offset < 0)
          return 0;
 
       int msglen;
-
+      // 把丢失包的数据读入packet中
       payload = m_pSndBuffer->readData(&(packet.m_pcData), offset, packet.m_iMsgNo, msglen);
 
       if (-1 == payload)
@@ -2364,8 +2364,9 @@ int CUDT::packData(CPacket& packet, uint64_t& ts)
       }
       else if (0 == payload)
          return 0;
-
+      
       ++ m_iTraceRetrans;
+      // 重传包的数量
       ++ m_iRetransTotal;
    }
    else // 未丢包，正常情况下的处理
@@ -2377,14 +2378,17 @@ int CUDT::packData(CPacket& packet, uint64_t& ts)
       int cwnd = (m_iFlowWindowSize < (int)m_dCongestionWindow) ? m_iFlowWindowSize : (int)m_dCongestionWindow;
       if (cwnd >= CSeqNo::seqlen(m_iSndLastAck, CSeqNo::incseq(m_iSndCurrSeqNo)))
       {
+         // 把数据读入packet中
          if (0 != (payload = m_pSndBuffer->readData(&(packet.m_pcData), packet.m_iMsgNo)))
          {
+            // 设置SeqNo  每次+1
             m_iSndCurrSeqNo = CSeqNo::incseq(m_iSndCurrSeqNo);
             m_pCC->setSndCurrSeqNo(m_iSndCurrSeqNo);
 
             packet.m_iSeqNo = m_iSndCurrSeqNo;
 
             // every 16 (0xF) packets, a packet pair is sent
+            // 如果m_iSeqNo是16的整数倍,设置probe = true
             if (0 == (packet.m_iSeqNo & 0xF))
                probe = true;
          }
