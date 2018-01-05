@@ -124,7 +124,7 @@ DWORD WINAPI recvdata(LPVOID usocket)
    delete (UDTSOCKET*)usocket;
 
    char* data;
-   int size = 100000;
+   int size = 6;
    data = new char[size];
 
    while (true)
@@ -142,13 +142,29 @@ DWORD WINAPI recvdata(LPVOID usocket)
             cout << "recv:" << UDT::getlasterror().getErrorMessage() << endl;
             break;
          }
-
+         cout << "recv:" << data + rsize << endl;
          rsize += rs;
       }
       // 出现错误就结束while循环 否则因为rsize==100000继续循环接收数据
       if (rsize < size)
          break;
    }
+   /*while(true)
+   {
+        int rsize = 0;
+        int rs;
+        int rcv_size;
+        int var_size = sizeof(int);
+		// 获取套接字的选项 获取接收缓冲区中的数据大小rcv_size
+        UDT::getsockopt(recver, 0, UDT_RCVDATA, &rcv_size, &var_size);
+        if (UDT::ERROR == (rs = UDT::recv(recver, data + rsize, size - rsize, 0)))
+        {
+           cout << "recv:" << UDT::getlasterror().getErrorMessage() << endl;
+           break;
+        }
+
+        rsize += rs;
+   }*/
 
    delete [] data;
 

@@ -587,7 +587,7 @@ void CUDT::connect(const sockaddr* serv_addr)
    if (m_bConnecting || m_bConnected)
       throw CUDTException(5, 2, 0);
 
-   // record peer/server address\
+   // record peer/server address
    delete m_pPeerAddr;
    // 拷贝服务器的地址进入m_pPeerAddr中
    m_pPeerAddr = (AF_INET == m_iIPversion) ? (sockaddr*)new sockaddr_in : (sockaddr*)new sockaddr_in6;
@@ -621,6 +621,7 @@ void CUDT::connect(const sockaddr* serv_addr)
 
    m_iLastDecSeq = m_iISN - 1;
    m_iSndLastAck = m_iISN;
+   printf("1:%d\n",m_iSndLastAck);
    m_iSndLastDataAck = m_iISN;
    m_iSndCurrSeqNo = m_iISN - 1;
    m_iSndLastAck2 = m_iISN;
@@ -868,6 +869,7 @@ void CUDT::connect(const sockaddr* peer, CHandShake* hs)
 
    m_iLastDecSeq = m_iISN - 1;
    m_iSndLastAck = m_iISN;
+   printf("2:%d\n",m_iSndLastAck);
    m_iSndLastDataAck = m_iISN;
    m_iSndCurrSeqNo = m_iISN - 1;
    m_iSndLastAck2 = m_iISN;
@@ -2031,6 +2033,7 @@ void CUDT::processCtrl(CPacket& ctrlpkt)
          {
             m_iFlowWindowSize -= CSeqNo::seqoff(m_iSndLastAck, ack);
             m_iSndLastAck = ack;
+            printf("3:%d\n",m_iSndLastAck);
          }
 
          break;
@@ -2066,6 +2069,7 @@ void CUDT::processCtrl(CPacket& ctrlpkt)
          // Update Flow Window Size, must update before and together with m_iSndLastAck
          m_iFlowWindowSize = *((int32_t *)ctrlpkt.m_pcData + 3);
          m_iSndLastAck = ack;
+         printf("4:%d\n",m_iSndLastAck);
       }
 
       // protect packet retransmission
@@ -2375,7 +2379,9 @@ int CUDT::packData(CPacket& packet, uint64_t& ts)
 
       // 获取拥塞窗口大小
       // check congestion/flow window limit
+      // m_iFlowWindowSize默认为8192 m_dCongestionWindow默认为16  
       int cwnd = (m_iFlowWindowSize < (int)m_dCongestionWindow) ? m_iFlowWindowSize : (int)m_dCongestionWindow;
+      printf("cwnd:%d m_iSndLastAck: %d\n",cwnd, m_iSndLastAck);
       if (cwnd >= CSeqNo::seqlen(m_iSndLastAck, CSeqNo::incseq(m_iSndCurrSeqNo)))
       {
          // 把数据读入packet中

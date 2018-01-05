@@ -102,8 +102,9 @@ int main(int argc, char* argv[])
    //if (NULL != cchandle)
    //   cchandle->setRate(500);
 
-   int size = 100000;
+   int size = 6;
    char* data = new char[size];
+   memcpy(data, "abcde", size);
 
    #ifndef WIN32
       pthread_create(new pthread_t, NULL, monitor, &client);
@@ -111,7 +112,7 @@ int main(int argc, char* argv[])
       CreateThread(NULL, 0, monitor, &client, 0, NULL);
    #endif
 
-   for (int i = 0; i < 1000000; i ++)
+   /*for (int i = 0; i < 1000000; i ++)
    {
       int ssize = 0;
       int ss;
@@ -127,7 +128,19 @@ int main(int argc, char* argv[])
 
       if (ssize < size)
          break;
+   }*/
+   int ssize = 0;
+   int ss;
+   for(int i = 0; i < 5; i++)
+   {
+      if (UDT::ERROR == (ss = UDT::send(client, data + i, 1, 0)))
+      {
+         cout << "send:" << UDT::getlasterror().getErrorMessage() << endl;
+      }
+      cout << "send:"<<data[i]<< endl;
+      sleep(2);
    }
+
 
    UDT::close(client);
    delete [] data;
@@ -140,7 +153,7 @@ void* monitor(void* s)
 DWORD WINAPI monitor(LPVOID s)
 #endif
 {
-   UDTSOCKET u = *(UDTSOCKET*)s;
+   /*UDTSOCKET u = *(UDTSOCKET*)s;
 
    UDT::TRACEINFO perf;
 
@@ -166,7 +179,7 @@ DWORD WINAPI monitor(LPVOID s)
            << perf.usPktSndPeriod << "\t\t\t" 
            << perf.pktRecvACK << "\t" 
            << perf.pktRecvNAK << endl;
-   }
+   }*/
 
    #ifndef WIN32
       return NULL;
