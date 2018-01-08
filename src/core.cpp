@@ -2389,6 +2389,7 @@ int CUDT::packData(CPacket& packet, uint64_t& ts)
          {
             // ÉèÖÃSeqNo  Ã¿´Î+1
             m_iSndCurrSeqNo = CSeqNo::incseq(m_iSndCurrSeqNo);
+            printf("m_iSndCurrSeqNo: %d\n", m_iSndCurrSeqNo);
             m_pCC->setSndCurrSeqNo(m_iSndCurrSeqNo);
 
             packet.m_iSeqNo = m_iSndCurrSeqNo;
@@ -2478,6 +2479,7 @@ int CUDT::processData(CUnit* unit)
    ++ m_llTraceRecv;
    ++ m_llRecvTotal;
 
+   printf("recv m_iRcvLastAck : %d packet.m_iSeqNo : %d\n", m_iRcvLastAck, packet.m_iSeqNo);
    int32_t offset = CSeqNo::seqoff(m_iRcvLastAck, packet.m_iSeqNo);
    if ((offset < 0) || (offset >= m_pRcvBuffer->getAvailBufSize()))
       return -1;
