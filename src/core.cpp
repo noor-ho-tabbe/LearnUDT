@@ -780,6 +780,7 @@ POST_CONNECT:
    m_iPayloadSize = m_iPktSize - CPacket::m_iPktHdrSize; // 1500-28-16 = 1456
    m_iPeerISN = m_ConnRes.m_iISN;
    m_iRcvLastAck = m_ConnRes.m_iISN;
+   printf("recv m_iRcvLastAck------%d\n", m_iRcvLastAck);
    m_iRcvLastAckAck = m_ConnRes.m_iISN;
    m_iRcvCurrSeqNo = m_ConnRes.m_iISN - 1;
    m_PeerID = m_ConnRes.m_iID;
@@ -858,6 +859,8 @@ void CUDT::connect(const sockaddr* peer, CHandShake* hs)
    m_iPeerISN = hs->m_iISN;
 
    m_iRcvLastAck = hs->m_iISN;
+   
+   printf("recv m_iRcvLastAck1111------%d\n", m_iRcvLastAck);
    m_iRcvLastAckAck = hs->m_iISN;
    m_iRcvCurrSeqNo = hs->m_iISN - 1;
 
@@ -1833,7 +1836,8 @@ void CUDT::sendCtrl(int pkttype, void* lparam, void* rparam, int size)
          int acksize = CSeqNo::seqoff(m_iRcvLastAck, ack);
 
          m_iRcvLastAck = ack;
-
+         
+		 printf("recv m_iRcvLastAck--ack-%d\n", m_iRcvLastAck);
          m_pRcvBuffer->ackData(acksize);
 
          // signal a waiting "recv" call if there is any data available
@@ -2620,7 +2624,7 @@ void CUDT::checkTimers()
 
    uint64_t currtime;
    CTimer::rdtsc(currtime);
-
+   // m_ullNextACKTime : ack的超时时间 初始时被设置为0.01ms
    if ((currtime > m_ullNextACKTime) || ((m_pCC->m_iACKInterval > 0) && (m_pCC->m_iACKInterval <= m_iPktCount)))
    {
       // ACK timer expired or ACK interval is reached
