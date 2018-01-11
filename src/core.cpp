@@ -621,7 +621,6 @@ void CUDT::connect(const sockaddr* serv_addr)
 
    m_iLastDecSeq = m_iISN - 1;
    m_iSndLastAck = m_iISN;
-   printf("1:%d\n",m_iSndLastAck);
    m_iSndLastDataAck = m_iISN;
    m_iSndCurrSeqNo = m_iISN - 1;
    m_iSndLastAck2 = m_iISN;
@@ -662,6 +661,22 @@ void CUDT::connect(const sockaddr* serv_addr)
    response.pack(0, NULL, resdata, m_iPayloadSize);
 
    CUDTException e(0, 0);
+   
+   printf(">>>>>>>>>>>>>>>>>connect info <<<<<<<<<<<<<<<<<\n");
+   printf("m_ConnReq.m_iFlightFlagSize : %d\n", m_ConnReq.m_iFlightFlagSize);
+   printf("m_ConnReq.m_iReqType : %d\n", m_ConnReq.m_iReqType);
+   printf("m_ConnReq.m_iISN : %d\n", m_ConnReq.m_iISN);
+   printf("m_ConnReq.m_iID : %d\n", m_ConnReq.m_iID);
+   printf("m_ConnReq.m_iCookie : %d\n", m_ConnReq.m_iCookie);
+   printf("request.m_iID : %d\n", request.m_iID);
+   
+   /*printf("m_iLastDecSeq : %d\n", m_iLastDecSeq);
+   printf("m_iSndLastAck : %d\n", m_iSndLastAck);
+   printf("m_iSndLastDataAck : %d\n", m_iSndLastDataAck);
+   printf("m_iSndCurrSeqNo : %d\n", m_iSndCurrSeqNo);
+   printf("m_iSndLastAck2 : %d\n", m_iSndLastAck2);
+   printf("m_ullSndLastAck2Time : %d\n", m_ullSndLastAck2Time);
+   printf("m_llLastReqTime : %d\n", m_llLastReqTime);*/
 
    // CUDT处于未关闭状态时候
    while (!m_bClosing)
@@ -764,6 +779,15 @@ int CUDT::connect(const CPacket& response) throw ()
          m_ConnReq.m_iReqType = -1;
          m_ConnReq.m_iCookie = m_ConnRes.m_iCookie;
          m_llLastReqTime = 0;
+         
+         printf(">>>>>>>>>>>>>>>>>set cookie connect info <<<<<<<<<<<<<<<<<\n");
+         printf("m_ConnReq.m_iFlightFlagSize : %d\n", m_ConnReq.m_iFlightFlagSize);
+         printf("m_ConnReq.m_iReqType : %d\n", m_ConnReq.m_iReqType);
+         printf("m_ConnReq.m_iISN : %d\n", m_ConnReq.m_iISN);
+         printf("m_ConnReq.m_iID : %d\n", m_ConnReq.m_iID);
+         printf("m_ConnReq.m_iCookie : %d\n", m_ConnReq.m_iCookie);
+         printf("response.m_iID : %d\n", response.m_iID);
+         
          return 1;
       }
    }
@@ -785,6 +809,15 @@ POST_CONNECT:
    m_iRcvCurrSeqNo = m_ConnRes.m_iISN - 1;
    m_PeerID = m_ConnRes.m_iID;
    memcpy(m_piSelfIP, m_ConnRes.m_piPeerIP, 16);
+
+
+   printf(">>>>>>>>>>>>>>>>>Re-configure connect info <<<<<<<<<<<<<<<<<\n");
+   printf("m_ConnReq.m_iFlightFlagSize : %d\n", m_ConnReq.m_iFlightFlagSize);
+   printf("m_ConnReq.m_iReqType : %d\n", m_ConnReq.m_iReqType);
+   printf("m_ConnReq.m_iISN : %d\n", m_ConnReq.m_iISN);
+   printf("m_ConnReq.m_iID : %d\n", m_ConnReq.m_iID);
+   printf("m_ConnReq.m_iCookie : %d\n", m_ConnReq.m_iCookie);
+   printf("response.m_iID : %d\n", response.m_iID);
 
    // Prepare all data structures
    try
@@ -860,7 +893,6 @@ void CUDT::connect(const sockaddr* peer, CHandShake* hs)
 
    m_iRcvLastAck = hs->m_iISN;
    
-   printf("recv m_iRcvLastAck1111------%d\n", m_iRcvLastAck);
    m_iRcvLastAckAck = hs->m_iISN;
    m_iRcvCurrSeqNo = hs->m_iISN - 1;
 
@@ -872,7 +904,6 @@ void CUDT::connect(const sockaddr* peer, CHandShake* hs)
 
    m_iLastDecSeq = m_iISN - 1;
    m_iSndLastAck = m_iISN;
-   printf("2:%d\n",m_iSndLastAck);
    m_iSndLastDataAck = m_iISN;
    m_iSndCurrSeqNo = m_iISN - 1;
    m_iSndLastAck2 = m_iISN;
@@ -943,6 +974,15 @@ void CUDT::connect(const sockaddr* peer, CHandShake* hs)
    hs->serialize(buffer, size);
    response.pack(0, NULL, buffer, size);
    response.m_iID = m_PeerID;
+   
+   printf(">>>>>>>>>>>>>>>>>response connect info <<<<<<<<<<<<<<<<<\n");
+   printf("hs.m_iFlightFlagSize : %d\n", hs->m_iFlightFlagSize);
+   printf("hs.m_iReqType : %d\n", hs->m_iReqType);
+   printf("hs.m_iISN : %d\n", hs->m_iISN);
+   printf("hs.m_iID : %d\n", hs->m_iID);
+   printf("hs.m_iCookie : %d\n", hs->m_iCookie);
+   printf("response.m_iID : %d\n", response.m_iID);
+
    m_pSndQueue->sendto(peer, response);
    delete [] buffer;
 }
@@ -1806,6 +1846,12 @@ void CUDT::sendCtrl(int pkttype, void* lparam, void* rparam, int size)
       {
       int32_t ack;
 
+
+
+      /*ack原则: 
+       *1.如果丢失列表为空 ack -> CSeqNo::incseq(m_iRcvCurrSeqNo)(当前的包的序列号+1)
+       *2.丢失列表不为空   ack -> m_pRcvLossList->getFirstLostSeq()(首次丢失包的序列号)
+      */   
       // If there is no loss, the ACK is the current largest sequence number plus 1;
       // Otherwise it is the smallest sequence number in the receiver loss list.
       if (0 == m_pRcvLossList->getLossLength())
@@ -1813,6 +1859,7 @@ void CUDT::sendCtrl(int pkttype, void* lparam, void* rparam, int size)
       else
          ack = m_pRcvLossList->getFirstLostSeq();
 
+      // 检查是否被ack过 m_iRcvLastAckAck:对ack包的确认，如果ack过并且发送方已经收到ack消息
       if (ack == m_iRcvLastAckAck)
          break;
 
@@ -1830,9 +1877,11 @@ void CUDT::sendCtrl(int pkttype, void* lparam, void* rparam, int size)
       uint64_t currtime;
       CTimer::rdtsc(currtime);
 
+      // CSeqNo::seqcmp(ack, m_iRcvLastAck) > 0 : 新的连续包被接收
       // There are new received packets to acknowledge, update related information.
       if (CSeqNo::seqcmp(ack, m_iRcvLastAck) > 0)
       {
+         // 计算ack数据包的个数
          int acksize = CSeqNo::seqoff(m_iRcvLastAck, ack);
 
          m_iRcvLastAck = ack;
@@ -1866,7 +1915,7 @@ void CUDT::sendCtrl(int pkttype, void* lparam, void* rparam, int size)
       if (CSeqNo::seqcmp(m_iRcvLastAck, m_iRcvLastAckAck) > 0)
       {
          int32_t data[6];
-
+         // 构造ack package
          m_iAckSeqNo = CAckNo::incack(m_iAckSeqNo);
          data[0] = m_iRcvLastAck;
          data[1] = m_iRTT;
@@ -1890,6 +1939,7 @@ void CUDT::sendCtrl(int pkttype, void* lparam, void* rparam, int size)
          }
 
          ctrlpkt.m_iID = m_PeerID;
+         // 发送ack 
          m_pSndQueue->sendto(m_pPeerAddr, ctrlpkt);
 
          m_pACKWindow->store(m_iAckSeqNo, m_iRcvLastAck);
@@ -2029,7 +2079,7 @@ void CUDT::processCtrl(CPacket& ctrlpkt)
       {
       int32_t ack;
 
-      // process a lite ACK
+      // process a lite ACK  处理"light"ACK packet
       if (4 == ctrlpkt.getLength())
       {
          ack = *(int32_t *)ctrlpkt.m_pcData;
@@ -2037,20 +2087,21 @@ void CUDT::processCtrl(CPacket& ctrlpkt)
          {
             m_iFlowWindowSize -= CSeqNo::seqoff(m_iSndLastAck, ack);
             m_iSndLastAck = ack;
-            printf("3:%d\n",m_iSndLastAck);
          }
 
          break;
       }
 
-       // read ACK seq. no.
+      // 获取ack seqNo
+      // read ACK seq. no.
       ack = ctrlpkt.getAckSeqNo();
-
+      // 发送ack的确认包ack2,确认ack2收到了
       // send ACK acknowledgement
       // number of ACK2 can be much less than number of ACK
       uint64_t now = CTimer::getTime();
       if ((currtime - m_ullSndLastAck2Time > (uint64_t)m_iSYNInterval) || (ack == m_iSndLastAck2))
       {
+         // 发送ack2
          sendCtrl(6, &ack);
          m_iSndLastAck2 = ack;
          m_ullSndLastAck2Time = now;
@@ -2059,6 +2110,7 @@ void CUDT::processCtrl(CPacket& ctrlpkt)
       // Got data ACK
       ack = *(int32_t *)ctrlpkt.m_pcData;
 
+      // 对ack进行校验，这里表示ack从未发送过数据包，可能是一个攻击包
       // check the validation of the ack
       if (CSeqNo::seqcmp(ack, CSeqNo::incseq(m_iSndCurrSeqNo)) > 0)
       {
@@ -2070,6 +2122,7 @@ void CUDT::processCtrl(CPacket& ctrlpkt)
 
       if (CSeqNo::seqcmp(ack, m_iSndLastAck) >= 0)
       {
+         // 更新滑动窗口
          // Update Flow Window Size, must update before and together with m_iSndLastAck
          m_iFlowWindowSize = *((int32_t *)ctrlpkt.m_pcData + 3);
          m_iSndLastAck = ack;
@@ -2079,6 +2132,7 @@ void CUDT::processCtrl(CPacket& ctrlpkt)
       // protect packet retransmission
       CGuard::enterCS(m_AckLock);
 
+      // 表明接收到的这个ACK消息要ACK的目标SeqNo已经被其它ACK消息给ACK过了
       int offset = CSeqNo::seqoff(m_iSndLastDataAck, ack);
       if (offset <= 0)
       {
@@ -2090,6 +2144,8 @@ void CUDT::processCtrl(CPacket& ctrlpkt)
       // acknowledge the sending buffer
       m_pSndBuffer->ackData(offset);
 
+
+      // 统计时间
       // record total time used for sending
       m_llSndDuration += currtime - m_llSndDurationCounter;
       m_llSndDurationTotal += currtime - m_llSndDurationCounter;
@@ -2153,6 +2209,7 @@ void CUDT::processCtrl(CPacket& ctrlpkt)
       int32_t ack;
       int rtt = -1;
 
+      // 计算rtt
       // update RTT
       rtt = m_pACKWindow->acknowledge(ctrlpkt.getAckSeqNo(), ack);
       if (rtt <= 0)
@@ -2164,7 +2221,7 @@ void CUDT::processCtrl(CPacket& ctrlpkt)
       // RTT EWMA
       m_iRTTVar = (m_iRTTVar * 3 + abs(rtt - m_iRTT)) >> 2;
       m_iRTT = (m_iRTT * 7 + rtt) >> 3;
-
+      // 根据计算的rtt时间设置拥塞控制器
       m_pCC->setRTT(m_iRTT);
 
       // update last ACK that has been received by the sender
@@ -2510,6 +2567,7 @@ int CUDT::processData(CUnit* unit)
       m_iRcvLossTotal += loss;
    }
 
+   // 收到一个消息的结束包把时间读入 m_ullNextACKTime 中
    // This is not a regular fixed size packet...   
    //an irregular sized packet usually indicates the end of a message, so send an ACK immediately   
    if (packet.getLength() != m_iPayloadSize)   
@@ -2537,6 +2595,14 @@ int CUDT::listen(sockaddr* addr, CPacket& packet)
    // 反序列化,把收到的报文取出来放好.w.
    hs.deserialize(packet.m_pcData, packet.getLength());
 
+   printf(">>>>>>>>>>>>>>>>>recv connect info <<<<<<<<<<<<<<<<<\n");
+   printf("hs.m_iFlightFlagSize : %d\n", hs.m_iFlightFlagSize);
+   printf("hs.m_iReqType : %d\n", hs.m_iReqType);
+   printf("hs.m_iISN : %d\n", hs.m_iISN);
+   printf("hs.m_iID : %d\n", hs.m_iID);
+   printf("hs.m_iCookie : %d\n", hs.m_iCookie);
+   printf("response.m_iID : %d\n", packet.m_iID);
+
    // SYN cookie
    char clienthost[NI_MAXHOST];
    char clientport[NI_MAXSERV];
@@ -2554,9 +2620,15 @@ int CUDT::listen(sockaddr* addr, CPacket& packet)
       // 设置cookie
       hs.m_iCookie = *(int*)cookie;
       packet.m_iID = hs.m_iID;  // 对端的socket id 是一个随机数 
-      printf("packet.m_iID:%d\n", packet.m_iID);
       int size = packet.getLength();
       hs.serialize(packet.m_pcData, size);
+      printf(">>>>>>>>>>>>>>>>>response connect info <<<<<<<<<<<<<<<<<\n");
+      printf("hs.m_iFlightFlagSize : %d\n", hs.m_iFlightFlagSize);
+      printf("hs.m_iReqType : %d\n", hs.m_iReqType);
+      printf("hs.m_iISN : %d\n", hs.m_iISN);
+      printf("hs.m_iID : %d\n", hs.m_iID);
+      printf("hs.m_iCookie : %d\n", hs.m_iCookie);
+      printf("response.m_iID : %d\n", packet.m_iID);
 	  // 把收到的包返回回去
       m_pSndQueue->sendto(addr, packet);
       return 0;
@@ -2572,6 +2644,7 @@ int CUDT::listen(sockaddr* addr, CPacket& packet)
          if (hs.m_iCookie != *(int*)cookie)
             return -1;
       }
+
    }
 
    int32_t id = hs.m_iID;
@@ -2625,20 +2698,21 @@ void CUDT::checkTimers()
    uint64_t currtime;
    CTimer::rdtsc(currtime);
    // m_ullNextACKTime : ack的超时时间 初始时被设置为0.01ms
+   // m_pCC->m_iACKInterval用于控制每接收多少个数据packet要发送一个ACK消息
    if ((currtime > m_ullNextACKTime) || ((m_pCC->m_iACKInterval > 0) && (m_pCC->m_iACKInterval <= m_iPktCount)))
    {
       // ACK timer expired or ACK interval is reached
-
+      // 发送ACK
       sendCtrl(2);
       CTimer::rdtsc(currtime);
-      if (m_pCC->m_iACKPeriod > 0)
+      if (m_pCC->m_iACKPeriod > 0)  // 计算下一次 m_ullNextACKTime 的时间
          m_ullNextACKTime = currtime + m_pCC->m_iACKPeriod * m_ullCPUFrequency;
       else
          m_ullNextACKTime = currtime + m_ullACKInt;
 
       m_iPktCount = 0;
       m_iLightACKCount = 1;
-   }
+   }  // m_iSelfClockInterval为内部时钟的ACK发送间隔
    else if (m_iSelfClockInterval * m_iLightACKCount <= m_iPktCount)
    {
       //send a "light" ACK
@@ -2656,6 +2730,7 @@ void CUDT::checkTimers()
    //   m_ullNextNAKTime = currtime + m_ullNAKInt;
    //}
 
+   // 计算超时时间
    uint64_t next_exp_time;
    if (m_pCC->m_bUserDefinedRTO)
       next_exp_time = m_ullLastRspTime + m_pCC->m_iRTO * m_ullCPUFrequency;
@@ -2667,6 +2742,7 @@ void CUDT::checkTimers()
       next_exp_time = m_ullLastRspTime + exp_int;
    }
 
+   // 时间过长认为连接断开
    if (currtime > next_exp_time)
    {
       // Haven't receive any information from the peer, is it dead?!
