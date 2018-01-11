@@ -775,12 +775,19 @@ int CUDT::connect(const CPacket& response) throw ()
       // set cookie
       if (1 == m_ConnRes.m_iReqType)
       {
+         printf(">>>>>>>>>>>>>>>>>recv response  info <<<<<<<<<<<<<<<<<\n");
+         printf("m_ConnReq.m_iFlightFlagSize : %d\n", m_ConnReq.m_iFlightFlagSize);
+         printf("m_ConnReq.m_iReqType : %d\n", m_ConnReq.m_iReqType);
+         printf("m_ConnReq.m_iISN : %d\n", m_ConnReq.m_iISN);
+         printf("m_ConnReq.m_iID : %d\n", m_ConnReq.m_iID);
+         printf("m_ConnReq.m_iCookie : %d\n", m_ConnReq.m_iCookie);
+         printf("response.m_iID : %d\n", response.m_iID);
          // 这里把m_ConnReq.m_iReqType设置成-1,服务端收到后会返回-1
          m_ConnReq.m_iReqType = -1;
          m_ConnReq.m_iCookie = m_ConnRes.m_iCookie;
          m_llLastReqTime = 0;
          
-         printf(">>>>>>>>>>>>>>>>>set cookie connect info <<<<<<<<<<<<<<<<<\n");
+         printf(">>>>>>>>>>>>>>>>>send cookie connect info <<<<<<<<<<<<<<<<<\n");
          printf("m_ConnReq.m_iFlightFlagSize : %d\n", m_ConnReq.m_iFlightFlagSize);
          printf("m_ConnReq.m_iReqType : %d\n", m_ConnReq.m_iReqType);
          printf("m_ConnReq.m_iISN : %d\n", m_ConnReq.m_iISN);
@@ -804,14 +811,13 @@ POST_CONNECT:
    m_iPayloadSize = m_iPktSize - CPacket::m_iPktHdrSize; // 1500-28-16 = 1456
    m_iPeerISN = m_ConnRes.m_iISN;
    m_iRcvLastAck = m_ConnRes.m_iISN;
-   printf("recv m_iRcvLastAck------%d\n", m_iRcvLastAck);
    m_iRcvLastAckAck = m_ConnRes.m_iISN;
    m_iRcvCurrSeqNo = m_ConnRes.m_iISN - 1;
    m_PeerID = m_ConnRes.m_iID;
    memcpy(m_piSelfIP, m_ConnRes.m_piPeerIP, 16);
 
 
-   printf(">>>>>>>>>>>>>>>>>Re-configure connect info <<<<<<<<<<<<<<<<<\n");
+   printf(">>>>>>>>>>>>>>>>>recv response info <<<<<<<<<<<<<<<<<\n");
    printf("m_ConnReq.m_iFlightFlagSize : %d\n", m_ConnReq.m_iFlightFlagSize);
    printf("m_ConnReq.m_iReqType : %d\n", m_ConnReq.m_iReqType);
    printf("m_ConnReq.m_iISN : %d\n", m_ConnReq.m_iISN);
