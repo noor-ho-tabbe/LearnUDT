@@ -86,6 +86,7 @@ int main(int argc, char* argv[])
 
    while (true)
    {
+      // accept里面检测到新的socket，完成accept
       if (UDT::INVALID_SOCK == (recver = UDT::accept(serv, (sockaddr*)&clientaddr, &addrlen)))
       {
          cout << "accept: " << UDT::getlasterror().getErrorMessage() << endl;

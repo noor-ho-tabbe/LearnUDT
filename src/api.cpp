@@ -436,6 +436,7 @@ int CUDTUnited::newConnection(const UDTSOCKET listen, const sockaddr* peer, CHan
    CGuard::enterCS(ls->m_AcceptLock);
    try
    {
+      // ²åÈësocketID
       ls->m_pQueuedSockets->insert(ns->m_SocketID);
    }
    catch (...)

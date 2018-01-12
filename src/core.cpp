@@ -689,6 +689,13 @@ void CUDT::connect(const sockaddr* serv_addr)
          request.setLength(hs_size);
          if (m_bRendezvous)
             request.m_iID = m_ConnRes.m_iID;
+         printf(">>>>>>>>>>>>>>>>>send request  info <<<<<<<<<<<<<<<<<\n");
+         printf("m_ConnReq.m_iFlightFlagSize : %d\n", m_ConnReq.m_iFlightFlagSize);
+         printf("m_ConnReq.m_iReqType : %d\n", m_ConnReq.m_iReqType);
+         printf("m_ConnReq.m_iISN : %d\n", m_ConnReq.m_iISN);
+         printf("m_ConnReq.m_iID : %d\n", m_ConnReq.m_iID);
+         printf("m_ConnReq.m_iCookie : %d\n", m_ConnReq.m_iCookie);
+         printf("request.m_iID : %d\n", request.m_iID);
          m_pSndQueue->sendto(serv_addr, request);
          m_llLastReqTime = CTimer::getTime();
       }
@@ -698,7 +705,7 @@ void CUDT::connect(const sockaddr* serv_addr)
       if (m_pRcvQueue->recvfrom(m_SocketID, response) > 0) 
       {
          // 根据返回的报文再次连接(第二次连接请求，根据返回来的报文，提取其中的cookie放入请求报文中发送到对端)
-         if (connect(response) <= 0)
+         if (connect(response) <= 0) //第二次成功以后返回0退出while循环
             break;
 
          // new request/response should be sent out immediately on receving a response
@@ -776,25 +783,16 @@ int CUDT::connect(const CPacket& response) throw ()
       if (1 == m_ConnRes.m_iReqType)
       {
          printf(">>>>>>>>>>>>>>>>>recv response  info <<<<<<<<<<<<<<<<<\n");
-         printf("m_ConnReq.m_iFlightFlagSize : %d\n", m_ConnReq.m_iFlightFlagSize);
-         printf("m_ConnReq.m_iReqType : %d\n", m_ConnReq.m_iReqType);
-         printf("m_ConnReq.m_iISN : %d\n", m_ConnReq.m_iISN);
-         printf("m_ConnReq.m_iID : %d\n", m_ConnReq.m_iID);
-         printf("m_ConnReq.m_iCookie : %d\n", m_ConnReq.m_iCookie);
+         printf("m_ConnReq.m_iFlightFlagSize : %d\n", m_ConnRes.m_iFlightFlagSize);
+         printf("m_ConnReq.m_iReqType : %d\n", m_ConnRes.m_iReqType);
+         printf("m_ConnReq.m_iISN : %d\n", m_ConnRes.m_iISN);
+         printf("m_ConnReq.m_iID : %d\n", m_ConnRes.m_iID);
+         printf("m_ConnReq.m_iCookie : %d\n", m_ConnRes.m_iCookie);
          printf("response.m_iID : %d\n", response.m_iID);
          // 这里把m_ConnReq.m_iReqType设置成-1,服务端收到后会返回-1
          m_ConnReq.m_iReqType = -1;
          m_ConnReq.m_iCookie = m_ConnRes.m_iCookie;
          m_llLastReqTime = 0;
-         
-         printf(">>>>>>>>>>>>>>>>>send cookie connect info <<<<<<<<<<<<<<<<<\n");
-         printf("m_ConnReq.m_iFlightFlagSize : %d\n", m_ConnReq.m_iFlightFlagSize);
-         printf("m_ConnReq.m_iReqType : %d\n", m_ConnReq.m_iReqType);
-         printf("m_ConnReq.m_iISN : %d\n", m_ConnReq.m_iISN);
-         printf("m_ConnReq.m_iID : %d\n", m_ConnReq.m_iID);
-         printf("m_ConnReq.m_iCookie : %d\n", m_ConnReq.m_iCookie);
-         printf("response.m_iID : %d\n", response.m_iID);
-         
          return 1;
       }
    }
@@ -818,12 +816,23 @@ POST_CONNECT:
 
 
    printf(">>>>>>>>>>>>>>>>>recv response info <<<<<<<<<<<<<<<<<\n");
-   printf("m_ConnReq.m_iFlightFlagSize : %d\n", m_ConnReq.m_iFlightFlagSize);
-   printf("m_ConnReq.m_iReqType : %d\n", m_ConnReq.m_iReqType);
-   printf("m_ConnReq.m_iISN : %d\n", m_ConnReq.m_iISN);
-   printf("m_ConnReq.m_iID : %d\n", m_ConnReq.m_iID);
-   printf("m_ConnReq.m_iCookie : %d\n", m_ConnReq.m_iCookie);
+   printf("m_ConnReq.m_iFlightFlagSize : %d\n", m_ConnRes.m_iFlightFlagSize);
+   printf("m_ConnReq.m_iReqType : %d\n", m_ConnRes.m_iReqType);
+   printf("m_ConnReq.m_iISN : %d\n", m_ConnRes.m_iISN);
+   printf("m_ConnReq.m_iID : %d\n", m_ConnRes.m_iID);
+   printf("m_ConnReq.m_iCookie : %d\n", m_ConnRes.m_iCookie);
    printf("response.m_iID : %d\n", response.m_iID);
+
+   printf(">>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n");
+   printf(">>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n");
+   printf(">>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n");
+
+   printf(">>>>>>>>>>>>>>>>>configure info <<<<<<<<<<<<<<<<<\n");
+   printf("m_iFlowWindowSize : %d\n", m_iFlowWindowSize);
+   printf("m_iRcvLastAck : %d\n", m_iRcvLastAck);
+   printf("m_iRcvLastAckAck : %d\n", m_iRcvLastAckAck);
+   printf("m_iRcvCurrSeqNo : %d\n", m_iRcvCurrSeqNo);
+
 
    // Prepare all data structures
    try
@@ -2669,6 +2678,7 @@ int CUDT::listen(sockaddr* addr, CPacket& packet)
       }
       else
       {
+         // 握手结束，准备收发数据
          int result = s_UDTUnited.newConnection(m_SocketID, addr, &hs);
          if (result == -1)
             hs.m_iReqType = 1002;
