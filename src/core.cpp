@@ -823,11 +823,9 @@ POST_CONNECT:
    printf("m_ConnReq.m_iCookie : %d\n", m_ConnRes.m_iCookie);
    printf("response.m_iID : %d\n", response.m_iID);
 
-   printf(">>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n");
-   printf(">>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n");
-   printf(">>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n");
+   printf("\n");
 
-   printf(">>>>>>>>>>>>>>>>>configure info <<<<<<<<<<<<<<<<<\n");
+   printf("--------------configure info------------\n");
    printf("m_iFlowWindowSize : %d\n", m_iFlowWindowSize);
    printf("m_iRcvLastAck : %d\n", m_iRcvLastAck);
    printf("m_iRcvLastAckAck : %d\n", m_iRcvLastAckAck);
