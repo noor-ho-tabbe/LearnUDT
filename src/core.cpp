@@ -922,6 +922,8 @@ void CUDT::connect(const sockaddr* peer, CHandShake* hs)
    m_iSndLastAck2 = m_iISN;
    m_ullSndLastAck2Time = CTimer::getTime();
 
+   
+
    // this is a reponse handshake
    hs->m_iReqType = -1;
 

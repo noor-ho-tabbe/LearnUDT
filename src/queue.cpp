@@ -536,7 +536,7 @@ void CSndQueue::init(CChannel* c, CTimer* t)
    {
       // 获取list中,处理下一个传输控制块的时间点 
       uint64_t ts = self->m_pSndUList->getNextProcTime();
-      printf("ts : %lld\n", ts);
+      //printf("ts : %lld\n", ts);
 
       if (ts > 0)
       {
