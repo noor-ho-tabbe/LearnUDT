@@ -831,6 +831,10 @@ POST_CONNECT:
    printf("m_iRcvLastAckAck : %d\n", m_iRcvLastAckAck);
    printf("m_iRcvCurrSeqNo : %d\n", m_iRcvCurrSeqNo);
 
+   printf("m_iSndLastAck : %d\n", m_iSndLastAck);
+   printf("m_iSndCurrSeqNo : %d\n", m_iSndCurrSeqNo);
+   
+   
 
    // Prepare all data structures
    try
@@ -1954,6 +1958,14 @@ void CUDT::sendCtrl(int pkttype, void* lparam, void* rparam, int size)
          }
 
          ctrlpkt.m_iID = m_PeerID;
+         
+         printf("-------------send ack-------------\n");
+         printf("acktype : %d\n", pkttype);
+         printf("ack number : %d\n", ack);
+         printf("ack squence number : %d\n", m_iAckSeqNo);
+         printf("RTT : %d\n", data[1]);
+         printf("RTTVar : %d\n", data[2]);
+         
          // ·¢ËÍack 
          m_pSndQueue->sendto(m_pPeerAddr, ctrlpkt);
 
@@ -1969,6 +1981,9 @@ void CUDT::sendCtrl(int pkttype, void* lparam, void* rparam, int size)
    case 6: //110 - Acknowledgement of Acknowledgement
       ctrlpkt.pack(pkttype, lparam);
       ctrlpkt.m_iID = m_PeerID;
+      printf("-------send ack2-----\n");
+      printf("ack type : %d\n", pkttype);
+      printf("ack number : %d\n", *((int*)lparam));
       m_pSndQueue->sendto(m_pPeerAddr, ctrlpkt);
 
       break;
@@ -2534,6 +2549,12 @@ int CUDT::packData(CPacket& packet, uint64_t& ts)
 int CUDT::processData(CUnit* unit)
 {
    CPacket& packet = unit->m_Packet;
+   
+   printf("------------recv data------------\n");
+   printf("m_iSeqNo : %d\n", packet.m_iSeqNo);
+   printf("m_iMsgNo : %d\n", packet.m_iMsgNo);
+   printf("m_iTimeStamp : %d\n", packet.m_iTimeStamp);
+   printf("m_iID : %d\n", packet.m_iID);
 
    // Just heard from the peer, reset the expiration count.
    m_iEXPCount = 1;
@@ -2554,8 +2575,7 @@ int CUDT::processData(CUnit* unit)
 
    ++ m_llTraceRecv;
    ++ m_llRecvTotal;
-
-   printf("recv m_iRcvLastAck : %d packet.m_iSeqNo : %d\n", m_iRcvLastAck, packet.m_iSeqNo);
+   
    int32_t offset = CSeqNo::seqoff(m_iRcvLastAck, packet.m_iSeqNo);
    if ((offset < 0) || (offset >= m_pRcvBuffer->getAvailBufSize()))
       return -1;
