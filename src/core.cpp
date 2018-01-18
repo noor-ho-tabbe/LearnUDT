@@ -1905,7 +1905,6 @@ void CUDT::sendCtrl(int pkttype, void* lparam, void* rparam, int size)
 
          m_iRcvLastAck = ack;
          
-		 printf("recv m_iRcvLastAck--ack-%d\n", m_iRcvLastAck);
          m_pRcvBuffer->ackData(acksize);
 
          // signal a waiting "recv" call if there is any data available
@@ -2107,6 +2106,13 @@ void CUDT::processCtrl(CPacket& ctrlpkt)
    {
    case 2: //010 - Acknowledgement
       {
+
+	  printf("-------------recv ack-------------\n");
+	  printf("acktype : %d\n", ctrlpkt.getType());
+	  printf("ack number : %d\n", ctrlpkt.getAckSeqNo());
+	  printf("ack squence number : %d\n", ctrlpkt.getMsgSeq());
+	  printf("RTT : %d\n", ctrlpkt.m_iTimeStamp);
+
       int32_t ack;
 
       // process a lite ACK  处理"light"ACK packet
@@ -2236,6 +2242,12 @@ void CUDT::processCtrl(CPacket& ctrlpkt)
 
    case 6: //110 - Acknowledgement of Acknowledgement
       {
+
+	  printf("-------------recv ack2-------------\n");
+	  printf("acktype : %d\n", ctrlpkt.getType());
+	  printf("ack number : %d\n", ctrlpkt.getAckSeqNo());
+	  printf("ack squence number : %d\n", ctrlpkt.getMsgSeq());
+	  printf("RTT : %d\n", ctrlpkt.m_iTimeStamp);
       int32_t ack;
       int rtt = -1;
 
@@ -2472,7 +2484,6 @@ int CUDT::packData(CPacket& packet, uint64_t& ts)
       // check congestion/flow window limit
       // m_iFlowWindowSize默认为8192 m_dCongestionWindow默认为16  
       int cwnd = (m_iFlowWindowSize < (int)m_dCongestionWindow) ? m_iFlowWindowSize : (int)m_dCongestionWindow;
-      printf("cwnd:%d m_iSndLastAck: %d\n",cwnd, m_iSndLastAck);
       if (cwnd >= CSeqNo::seqlen(m_iSndLastAck, CSeqNo::incseq(m_iSndCurrSeqNo)))
       {
          // 把数据读入packet中
@@ -2480,7 +2491,6 @@ int CUDT::packData(CPacket& packet, uint64_t& ts)
          {
             // 设置SeqNo  每次+1
             m_iSndCurrSeqNo = CSeqNo::incseq(m_iSndCurrSeqNo);
-            printf("m_iSndCurrSeqNo: %d\n", m_iSndCurrSeqNo);
             m_pCC->setSndCurrSeqNo(m_iSndCurrSeqNo);
 
             packet.m_iSeqNo = m_iSndCurrSeqNo;
