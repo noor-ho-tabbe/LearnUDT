@@ -143,7 +143,6 @@ DWORD WINAPI recvdata(LPVOID usocket)
             cout << "recv:" << UDT::getlasterror().getErrorMessage() << endl;
             break;
          }
-         cout << "recv:" << data + rsize << endl;
          rsize += rs;
       }
       // 出现错误就结束while循环 否则因为rsize==100000继续循环接收数据

@@ -1958,13 +1958,12 @@ void CUDT::sendCtrl(int pkttype, void* lparam, void* rparam, int size)
 
          ctrlpkt.m_iID = m_PeerID;
          printf("\n");
-         printf("-------------send ack-------------\n");
+         printf("[send ack]\n");
          printf("acktype : %d\n", pkttype);
          printf("ack number : %d\n", m_iAckSeqNo);
          printf("ack squence number : %d\n", ack);
          printf("RTT : %d\n", data[1]);
          printf("RTTVar : %d\n", data[2]);
-         printf("----------------------------------\n");
          
          // ·¢ËÍack 
          m_pSndQueue->sendto(m_pPeerAddr, ctrlpkt);
@@ -1982,10 +1981,9 @@ void CUDT::sendCtrl(int pkttype, void* lparam, void* rparam, int size)
       ctrlpkt.pack(pkttype, lparam);
       ctrlpkt.m_iID = m_PeerID;
       printf("\n");
-      printf("-------send ack2-----\n");
+      printf("[send ack2]\n");
       printf("ack type : %d\n", pkttype);
       printf("ack number : %d\n", *((int*)lparam));
-      printf("---------------------\n");
       m_pSndQueue->sendto(m_pPeerAddr, ctrlpkt);
 
       break;
@@ -2110,12 +2108,11 @@ void CUDT::processCtrl(CPacket& ctrlpkt)
    case 2: //010 - Acknowledgement
       {
       printf("\n");
-	  printf("-------------recv ack-------------\n");
+	  printf("[recv ack]\n");
 	  printf("acktype : %d\n", ctrlpkt.getType());
 	  printf("ack number : %d\n", ctrlpkt.getAckSeqNo());
 	  printf("ack squence number : %d\n", *(int32_t *)ctrlpkt.m_pcData);
 	  printf("RTT : %d\n", *((int32_t *)ctrlpkt.m_pcData + 1));
-      printf("----------------------------------\n");
 
       int32_t ack;
 
@@ -2250,12 +2247,11 @@ void CUDT::processCtrl(CPacket& ctrlpkt)
       {
 
       printf("\n");
-	  printf("-------------recv ack2-------------\n");
+	  printf("[recv ack2]\n");
 	  printf("acktype : %d\n", ctrlpkt.getType());
 	  printf("ack number : %d\n", ctrlpkt.getAckSeqNo());
 	  printf("ack squence number : %d\n", *(int32_t *)ctrlpkt.m_pcData);
 	  printf("RTT : %d\n", ctrlpkt.m_iTimeStamp);
-      printf("-----------------------------------\n");
       int32_t ack;
       int rtt = -1;
 
@@ -2573,12 +2569,12 @@ int CUDT::processData(CUnit* unit)
 {
    CPacket& packet = unit->m_Packet;
    printf("\n");
-   printf("------------recv data------------\n");
+   printf("[recv data]\n");
    printf("m_iSeqNo : %d\n", packet.m_iSeqNo);
    printf("m_iMsgNo : %d\n", packet.getMsgSeq());
    printf("m_iTimeStamp : %d\n", packet.m_iTimeStamp);
    printf("m_iID : %d\n", packet.m_iID);
-   printf("---------------------------------\n");
+   printf("data : %s\n", packet.m_pcData);
    // Just heard from the peer, reset the expiration count.
    m_iEXPCount = 1;
    uint64_t currtime;
