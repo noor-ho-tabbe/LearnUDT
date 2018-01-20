@@ -552,12 +552,13 @@ void CSndQueue::init(CChannel* c, CTimer* t)
 		 // 从发送列表里面取出一个包发送 addr是服务器端地址
          if (self->m_pSndUList->pop(addr, pkt) < 0)
             continue;
+         printf("\n");
 		 printf("------send data------\n");
 		 printf("pkt.m_iSeqNo : %d\n", pkt.m_iSeqNo);
-		 printf("pkt.m_iMsgNo : %d\n", pkt.m_iMsgNo);
+         printf("pkt.m_iMsgNo : %d\n", pkt.getMsgSeq());
 		 printf("pkt.m_iTimeStamp : %d\n", pkt.m_iTimeStamp);
 		 printf("pkt.m_iID : %d\n", pkt.m_iID);
-		 
+		 printf("---------------------\n");
 		 
 		 
          // 发送这个package

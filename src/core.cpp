@@ -1957,13 +1957,14 @@ void CUDT::sendCtrl(int pkttype, void* lparam, void* rparam, int size)
          }
 
          ctrlpkt.m_iID = m_PeerID;
-         
+         printf("\n");
          printf("-------------send ack-------------\n");
          printf("acktype : %d\n", pkttype);
-         printf("ack number : %d\n", ack);
-         printf("ack squence number : %d\n", m_iAckSeqNo);
+         printf("ack number : %d\n", m_iAckSeqNo);
+         printf("ack squence number : %d\n", ack);
          printf("RTT : %d\n", data[1]);
          printf("RTTVar : %d\n", data[2]);
+         printf("----------------------------------\n");
          
          // 发送ack 
          m_pSndQueue->sendto(m_pPeerAddr, ctrlpkt);
@@ -1980,9 +1981,11 @@ void CUDT::sendCtrl(int pkttype, void* lparam, void* rparam, int size)
    case 6: //110 - Acknowledgement of Acknowledgement
       ctrlpkt.pack(pkttype, lparam);
       ctrlpkt.m_iID = m_PeerID;
+      printf("\n");
       printf("-------send ack2-----\n");
       printf("ack type : %d\n", pkttype);
       printf("ack number : %d\n", *((int*)lparam));
+      printf("---------------------\n");
       m_pSndQueue->sendto(m_pPeerAddr, ctrlpkt);
 
       break;
@@ -2106,18 +2109,19 @@ void CUDT::processCtrl(CPacket& ctrlpkt)
    {
    case 2: //010 - Acknowledgement
       {
-
+      printf("\n");
 	  printf("-------------recv ack-------------\n");
 	  printf("acktype : %d\n", ctrlpkt.getType());
 	  printf("ack number : %d\n", ctrlpkt.getAckSeqNo());
-	  printf("ack squence number : %d\n", ctrlpkt.getMsgSeq());
-	  printf("RTT : %d\n", ctrlpkt.m_iTimeStamp);
+	  printf("ack squence number : %d\n", *(int32_t *)ctrlpkt.m_pcData);
+	  printf("RTT : %d\n", *((int32_t *)ctrlpkt.m_pcData + 1));
+      printf("----------------------------------\n");
 
       int32_t ack;
 
       // process a lite ACK  处理"light"ACK packet
       if (4 == ctrlpkt.getLength())
-      {
+      {	
          ack = *(int32_t *)ctrlpkt.m_pcData;
          if (CSeqNo::seqcmp(ack, m_iSndLastAck) >= 0)
          {
@@ -2137,6 +2141,7 @@ void CUDT::processCtrl(CPacket& ctrlpkt)
       uint64_t now = CTimer::getTime();
       if ((currtime - m_ullSndLastAck2Time > (uint64_t)m_iSYNInterval) || (ack == m_iSndLastAck2))
       {
+         // 回复一个ACK2控制包，ACK2的ACK序列号使用相同的ACK序列号。
          // 发送ack2
          sendCtrl(6, &ack);
          m_iSndLastAck2 = ack;
@@ -2162,7 +2167,6 @@ void CUDT::processCtrl(CPacket& ctrlpkt)
          // Update Flow Window Size, must update before and together with m_iSndLastAck
          m_iFlowWindowSize = *((int32_t *)ctrlpkt.m_pcData + 3);
          m_iSndLastAck = ack;
-         printf("4:%d\n",m_iSndLastAck);
       }
 
       // protect packet retransmission
@@ -2220,10 +2224,12 @@ void CUDT::processCtrl(CPacket& ctrlpkt)
 
       if (ctrlpkt.getLength() > 16)
       {
+         // 更新包的到达速率 
          // Update Estimated Bandwidth and packet delivery rate
          if (*((int32_t *)ctrlpkt.m_pcData + 4) > 0)
             m_iDeliveryRate = (m_iDeliveryRate * 7 + *((int32_t *)ctrlpkt.m_pcData + 4)) >> 3;
-
+         
+         // 更新估计的链路容量
          if (*((int32_t *)ctrlpkt.m_pcData + 5) > 0)
             m_iBandwidth = (m_iBandwidth * 7 + *((int32_t *)ctrlpkt.m_pcData + 5)) >> 3;
 
@@ -2243,11 +2249,13 @@ void CUDT::processCtrl(CPacket& ctrlpkt)
    case 6: //110 - Acknowledgement of Acknowledgement
       {
 
+      printf("\n");
 	  printf("-------------recv ack2-------------\n");
 	  printf("acktype : %d\n", ctrlpkt.getType());
 	  printf("ack number : %d\n", ctrlpkt.getAckSeqNo());
-	  printf("ack squence number : %d\n", ctrlpkt.getMsgSeq());
+	  printf("ack squence number : %d\n", *(int32_t *)ctrlpkt.m_pcData);
 	  printf("RTT : %d\n", ctrlpkt.m_iTimeStamp);
+      printf("-----------------------------------\n");
       int32_t ack;
       int rtt = -1;
 
@@ -2261,11 +2269,16 @@ void CUDT::processCtrl(CPacket& ctrlpkt)
       //   sendCtrl(4);
 
       // RTT EWMA
+      // 更新RTT偏差
       m_iRTTVar = (m_iRTTVar * 3 + abs(rtt - m_iRTT)) >> 2;
+      // 计算新的RTT值
       m_iRTT = (m_iRTT * 7 + rtt) >> 3;
       // 根据计算的rtt时间设置拥塞控制器
       m_pCC->setRTT(m_iRTT);
 
+
+      printf("ack : %d m_iRcvLastAckAck : %d\n", ack, m_iRcvLastAckAck);
+      //更新已经被应答的最大ACK序列号。
       // update last ACK that has been received by the sender
       if (CSeqNo::seqcmp(ack, m_iRcvLastAckAck) > 0)
          m_iRcvLastAckAck = ack;
@@ -2559,13 +2572,13 @@ int CUDT::packData(CPacket& packet, uint64_t& ts)
 int CUDT::processData(CUnit* unit)
 {
    CPacket& packet = unit->m_Packet;
-   
+   printf("\n");
    printf("------------recv data------------\n");
    printf("m_iSeqNo : %d\n", packet.m_iSeqNo);
-   printf("m_iMsgNo : %d\n", packet.m_iMsgNo);
+   printf("m_iMsgNo : %d\n", packet.getMsgSeq());
    printf("m_iTimeStamp : %d\n", packet.m_iTimeStamp);
    printf("m_iID : %d\n", packet.m_iID);
-
+   printf("---------------------------------\n");
    // Just heard from the peer, reset the expiration count.
    m_iEXPCount = 1;
    uint64_t currtime;

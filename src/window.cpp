@@ -123,6 +123,7 @@ int CACKWindow::acknowledge(int32_t seq, int32_t& ack)
          j %= m_iSize;
          ack = m_piACK[j];
 
+         // 当前时间(接收到 ack2的时间 ) - 发送ACK的时间 
          // calculate RTT
          int rtt = int(CTimer::getTime() - m_pTimeStamp[j]);
 
