@@ -2443,6 +2443,12 @@ int CUDT::packData(CPacket& packet, uint64_t& ts)
    uint64_t entertime;
    CTimer::rdtsc(entertime);
 
+
+
+   /* m_ullInterval   : 发送周期
+   *  m_ullTimeDiff   : 用来记录当前的这次包发送时间相对于理想的发送时间的延滞值 
+   *  m_ullTargetTime : 理想发送时间
+   */ 
    if ((0 != m_ullTargetTime) && (entertime > m_ullTargetTime))
       m_ullTimeDiff += entertime - m_ullTargetTime;
 
@@ -2560,6 +2566,7 @@ int CUDT::packData(CPacket& packet, uint64_t& ts)
       #endif
    }
 
+   // 根据m_ullInterval计算下一次包发送的理想时间
    m_ullTargetTime = ts;
 
    return payload;

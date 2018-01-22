@@ -540,6 +540,7 @@ void CSndQueue::init(CChannel* c, CTimer* t)
 
       if (ts > 0)
       {
+         // 获取当前时间currtime和ts比较 如果currtime < ts则说明还没到包的发送时间，睡眠等到currtime == ts
          // wait until next processing time of the first socket on the list
          uint64_t currtime;
          CTimer::rdtsc(currtime);
