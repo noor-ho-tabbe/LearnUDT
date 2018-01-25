@@ -2499,6 +2499,8 @@ int CUDT::packData(CPacket& packet, uint64_t& ts)
       // check congestion/flow window limit
       // m_iFlowWindowSize默认为8192 m_dCongestionWindow默认为16  
       int cwnd = (m_iFlowWindowSize < (int)m_dCongestionWindow) ? m_iFlowWindowSize : (int)m_dCongestionWindow;
+      printf("m_iSndLastAck : %d m_iSndCurrSeqNo : %d\n",m_iSndLastAck, m_iSndCurrSeqNo);
+      // m_iSndLastAck的值为下一次Ack应该确认的packet的SeqNo
       if (cwnd >= CSeqNo::seqlen(m_iSndLastAck, CSeqNo::incseq(m_iSndCurrSeqNo)))
       {
          // 把数据读入packet中
