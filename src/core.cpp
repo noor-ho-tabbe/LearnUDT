@@ -2504,6 +2504,7 @@ int CUDT::packData(CPacket& packet, uint64_t& ts)
       // 计算滑动窗口大小 计算发送窗口中所有的packet的个数 m_iSndLastAck在收到消息后会增加
       if (cwnd >= CSeqNo::seqlen(m_iSndLastAck, CSeqNo::incseq(m_iSndCurrSeqNo)))
       {
+         //经过哥的抓包分析，终于搞清楚UDT的发包机制了^_^
          // 把数据读入packet中
          if (0 != (payload = m_pSndBuffer->readData(&(packet.m_pcData), packet.m_iMsgNo)))
          {
