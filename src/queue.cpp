@@ -293,7 +293,10 @@ void CSndUList::update(const CUDT* u, bool reschedule)
    if (n->m_iHeapLoc >= 0)
    {
       if (!reschedule)
-         return;
+      {
+          return;
+      }
+         
 
       if (n->m_iHeapLoc == 0)
       {
@@ -321,6 +324,8 @@ int CSndUList::pop(sockaddr*& addr, CPacket& pkt)
       return -1;
 
    CUDT* u = m_pHeap[0]->m_pUDT;
+   // 拿到堆顶端元素中的CUDT对象，然后把CSNode这个节点移除，调整堆的结构。
+   // 取最后一个元素来放在堆顶，然后调整堆得结构，最小堆
    remove_(u);
 
    if (!u->m_bConnected || u->m_bBroken)
@@ -333,6 +338,7 @@ int CSndUList::pop(sockaddr*& addr, CPacket& pkt)
 
    addr = u->m_pPeerAddr;
 
+   // 插入一个CSNode，ts就是下次发送包的时间
    // insert a new entry, ts is the next processing time
    if (ts > 0)
       insert_(ts, u);
@@ -383,6 +389,7 @@ void CSndUList::insert_(int64_t ts, const CUDT* u)
    int p = q;
    while (p != 0)
    {
+      // 在这里调整堆
       p = (q - 1) >> 1;
       if (m_pHeap[p]->m_llTimeStamp > m_pHeap[q]->m_llTimeStamp)
       {
@@ -536,7 +543,7 @@ void CSndQueue::init(CChannel* c, CTimer* t)
    {
       // 获取list中,处理下一个传输控制块的时间点 
       uint64_t ts = self->m_pSndUList->getNextProcTime();
-      //printf("ts : %lld\n", ts);
+      printf("ts : %lld\n", ts);
 
       if (ts > 0)
       {
@@ -544,6 +551,7 @@ void CSndQueue::init(CChannel* c, CTimer* t)
          // wait until next processing time of the first socket on the list
          uint64_t currtime;
          CTimer::rdtsc(currtime);
+         printf("currtime ts %lld %lld \n", currtime, ts);
          if (currtime < ts)
             self->m_pTimer->sleepto(ts);
 
