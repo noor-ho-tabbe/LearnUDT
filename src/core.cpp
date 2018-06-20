@@ -2449,6 +2449,9 @@ int CUDT::packData(CPacket& packet, uint64_t& ts)
    *  m_ullTimeDiff   : 用来记录当前的这次包发送时间相对于理想的发送时间的延滞值 
    *  m_ullTargetTime : 理想发送时间
    */ 
+
+   
+   printf("1.entertime m_ullInterval m_ullTargetTime m_ullTimeDiff %lld %lld %lld %lld \n", entertime, m_ullInterval, m_ullTargetTime, m_ullTimeDiff);
    if ((0 != m_ullTargetTime) && (entertime > m_ullTargetTime))
       m_ullTimeDiff += entertime - m_ullTargetTime;
 
@@ -2504,7 +2507,7 @@ int CUDT::packData(CPacket& packet, uint64_t& ts)
       // 计算滑动窗口大小 计算发送窗口中所有的packet的个数 m_iSndLastAck在收到消息后会增加
       if (cwnd >= CSeqNo::seqlen(m_iSndLastAck, CSeqNo::incseq(m_iSndCurrSeqNo)))
       {
-         //经过哥的抓包分析，终于搞清楚UDT的发包机制了^_^
+         
          // 把数据读入packet中
          if (0 != (payload = m_pSndBuffer->readData(&(packet.m_pcData), packet.m_iMsgNo)))
          {
@@ -2560,11 +2563,14 @@ int CUDT::packData(CPacket& packet, uint64_t& ts)
       #else
          if (m_ullTimeDiff >= m_ullInterval)
          {
+            
+			printf("2.entertime m_ullInterval m_ullTargetTime m_ullTimeDiff %lld %lld %lld %lld \n", entertime, m_ullInterval, m_ullTargetTime, m_ullTimeDiff);
             ts = entertime;
             m_ullTimeDiff -= m_ullInterval;
          }
          else
-         {
+         {            
+			printf("3.entertime m_ullInterval m_ullTargetTime m_ullTimeDiff %lld %lld %lld %lld \n", entertime, m_ullInterval, m_ullTargetTime, m_ullTimeDiff);
             ts = entertime + m_ullInterval - m_ullTimeDiff;
             m_ullTimeDiff = 0;
          }

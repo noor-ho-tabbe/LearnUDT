@@ -131,7 +131,7 @@ int main(int argc, char* argv[])
    }*/
    int ssize = 0;
    int ss;
-   for(int i = 0; i < 2; i++)
+   for(int i = 0; i < 5; i++)
    {
       if (UDT::ERROR == (ss = UDT::send(client, data + i, 1, 0)))
       {
